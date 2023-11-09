@@ -1,7 +1,7 @@
 package parsley.debugger.frontend
 
 import parsley.debugger.DebugTree
-import ToJson.Implicits._
+import parsley.debugger.frontend.internal.ToJson.Implicits._
 
 /** A frontend that emits a JSON-format string representing the parse tree.
   *
