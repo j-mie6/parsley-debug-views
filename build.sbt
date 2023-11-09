@@ -35,8 +35,8 @@ lazy val commonSettings = Seq(
   headerEmptyLine      := false,
   resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
-    "com.github.j-mie6" %%% "parsley"         % "4.4-bd7b78d-20231109T133407Z-SNAPSHOT",
-    "com.github.j-mie6" %%% "parsley-debug"   % "4.4-bd7b78d-20231109T133407Z-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley"         % "4.4-a0b4baa-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley-debug"   % "4.4-a0b4baa-SNAPSHOT",
     "org.scalactic"     %%% "scalactic"       % "3.2.15"   % Test,
     "org.scalatest"     %%% "scalatest"       % "3.2.15"   % Test,
     "org.scalatestplus" %%% "scalacheck-1-15" % "3.2.11.0" % Test
@@ -75,15 +75,3 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   )
 
 Test / parallelExecution := false
-
-// Scoverage settings.
-coverageFailOnMinimum := false
-coverageHighlighting  := true
-val defaultCoverageMinimum = 80
-
-coverageMinimumStmtTotal        := defaultCoverageMinimum
-coverageMinimumBranchTotal      := defaultCoverageMinimum
-coverageMinimumStmtPerPackage   := defaultCoverageMinimum
-coverageMinimumBranchPerPackage := defaultCoverageMinimum
-coverageMinimumStmtPerFile      := defaultCoverageMinimum
-coverageMinimumBranchPerFile    := defaultCoverageMinimum
