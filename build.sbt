@@ -1,3 +1,5 @@
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 // https://typelevel.org/sbt-typelevel/faq.html#what-is-a-base-version-anyway
 ThisBuild / tlBaseVersion := "0.1" // your current series x.y
 
@@ -27,26 +29,29 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
   JavaSpec.temurin("17")
 )
 
-lazy val root = tlCrossRootProject
-  .aggregate(con_ui, json_info, sfx_ui)
-  .settings(
-    headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
-    headerEmptyLine      := false,
-    resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
-    libraryDependencies ++= Seq(
-      "com.github.j-mie6" %%% "parsley"         % "4.4-de8306a-SNAPSHOT",
-      "com.github.j-mie6" %%% "parsley-debug"   % "4.4-de8306a-SNAPSHOT",
-      "org.scalactic"     %%% "scalactic"       % "3.2.15"   % Test,
-      "org.scalatest"     %%% "scalatest"       % "3.2.15"   % Test,
-      "org.scalatestplus" %%% "scalacheck-1-15" % "3.2.11.0" % Test
-    )
+// Shared dependencies for all frontends:
+lazy val commonSettings = Seq(
+  headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
+  headerEmptyLine      := false,
+  libraryDependencies ++= Seq(
+    "com.github.j-mie6" %%% "parsley"         % "4.4-bd7b78d-20231109T133407Z-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley-debug"   % "4.4-bd7b78d-20231109T133407Z-SNAPSHOT",
+    "org.scalactic"     %%% "scalactic"       % "3.2.15"   % Test,
+    "org.scalatest"     %%% "scalatest"       % "3.2.15"   % Test,
+    "org.scalatestplus" %%% "scalacheck-1-15" % "3.2.11.0" % Test
   )
+)
+
+ThisBuild / resolvers ++= Opts.resolver.sonatypeOssSnapshots
+
+lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui)
 
 lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("con-ui"))
   .settings(
+    commonSettings,
     name := "parsley-debug-console"
   )
 
@@ -55,6 +60,7 @@ lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .crossType(CrossType.Full)
   .in(file("json-info"))
   .settings(
+    commonSettings,
     name                := "parsley-debug-json",
     libraryDependencies += "com.lihaoyi" %%% "ujson" % "3.0.0"
   )
@@ -64,6 +70,7 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("sfx-ui"))
   .settings(
+    commonSettings,
     name                := "parsley-debug-sfx",
     libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30"
   )
