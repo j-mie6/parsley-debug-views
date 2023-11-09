@@ -33,6 +33,7 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 lazy val commonSettings = Seq(
   headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
   headerEmptyLine      := false,
+  resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
     "com.github.j-mie6" %%% "parsley"         % "4.4-bd7b78d-20231109T133407Z-SNAPSHOT",
     "com.github.j-mie6" %%% "parsley-debug"   % "4.4-bd7b78d-20231109T133407Z-SNAPSHOT",
@@ -41,8 +42,6 @@ lazy val commonSettings = Seq(
     "org.scalatestplus" %%% "scalacheck-1-15" % "3.2.11.0" % Test
   )
 )
-
-ThisBuild / resolvers ++= Opts.resolver.sonatypeOssSnapshots
 
 lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui)
 
