@@ -1,11 +1,11 @@
 // https://typelevel.org/sbt-typelevel/faq.html#what-is-a-base-version-anyway
-ThisBuild / tlBaseVersion := "0.0" // your current series x.y
+ThisBuild / tlBaseVersion := "0.1" // your current series x.y
 
 ThisBuild / organization     := "io.github.mf42-dzh"
 ThisBuild / organizationName := "Fawwaz Abdullah"
 ThisBuild / startYear        := Some(2023)
-ThisBuild / licenses   := Seq("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause"))
-ThisBuild / developers := List(
+ThisBuild / licenses         := Seq("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause"))
+ThisBuild / developers       := List(
   // your GitHub handle and name
   tlGitHubDev("mf42-dzh", "Fawwaz Abdullah")
 )
@@ -13,7 +13,7 @@ ThisBuild / developers := List(
 // publish to s01.oss.sonatype.org (set to true to publish to oss.sonatype.org instead)
 ThisBuild / tlSonatypeUseLegacyHost := false
 
-val Scala212 = "2.12.10"
+val Scala212 = "2.12.18"
 val Scala213 = "2.13.12"
 val Scala3   = "3.3.1"
 
@@ -28,7 +28,7 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 )
 
 lazy val root = tlCrossRootProject
-  .aggregate(conui)
+  .aggregate(con_ui, json_info, sfx_ui)
   .settings(
     headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
     headerEmptyLine      := false,
@@ -42,20 +42,29 @@ lazy val root = tlCrossRootProject
     )
   )
 
-lazy val conui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("conui"))
+  .crossType(CrossType.Full)
+  .in(file("con-ui"))
   .settings(
-    name := "parsley-debug-conui"
+    name := "parsley-debug-console"
   )
 
-lazy val sfxui = crossProject(JVMPlatform)
+lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("sfxui"))
+  .crossType(CrossType.Full)
+  .in(file("json-info"))
   .settings(
-    name                := "parsley-debug-sfxui",
+    name                := "parsley-debug-json",
+    libraryDependencies += "com.lihaoyi" %%% "ujson" % "3.0.0"
+  )
+
+lazy val sfx_ui = crossProject(JVMPlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("sfx-ui"))
+  .settings(
+    name                := "parsley-debug-sfx",
     libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30"
   )
 
