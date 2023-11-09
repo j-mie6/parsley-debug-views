@@ -4,6 +4,7 @@ project/plugins/project/
 boot/
 lib_managed/
 src_managed/
+null/
 
 # vim
 *.sw?

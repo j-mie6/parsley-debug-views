@@ -1,3 +1,8 @@
+/*
+ * Copyright 2023 Fawwaz Abdullah
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 package parsley.debugger.frontend.internal
 
 import parsley.debugger.DebugTree

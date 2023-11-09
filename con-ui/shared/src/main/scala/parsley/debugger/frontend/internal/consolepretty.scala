@@ -1,3 +1,8 @@
+/*
+ * Copyright 2023 Fawwaz Abdullah
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 package parsley.debugger.frontend.internal
 
 import scala.annotation.tailrec
@@ -45,8 +50,8 @@ object consolepretty {
     // Print a parse attempt in a human-readable way.
     private def printParseAttempt(attempt: ParseAttempt): String =
       s"(\"${attempt.rawInput}\" [${attempt.fromPos} -> ${attempt.toPos}], ${if (attempt.success)
-        s"Success - [ ${attempt.result.get} ]"
-      else "Failure"})"
+          s"Success - [ ${attempt.result.get} ]"
+        else "Failure"})"
 
     // Print all the children, remembering to add a blank indent for the last child.
     @tailrec private def printChildren(

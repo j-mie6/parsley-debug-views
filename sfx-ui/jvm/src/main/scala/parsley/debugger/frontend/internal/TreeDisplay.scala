@@ -1,3 +1,8 @@
+/*
+ * Copyright 2023 Fawwaz Abdullah
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 package parsley.debugger.frontend.internal
 
 import javafx.event.EventHandler
@@ -42,8 +47,8 @@ private[frontend] class TreeDisplay(
   private val treeView = new Group(mkTree(tree, selected))
   treeView.transforms = Seq(
     new Scale(1, 1) {
-      x      <== zoomLevel
-      y      <== zoomLevel
+      x <== zoomLevel
+      y <== zoomLevel
       pivotX <== Bindings.createDoubleBinding(
         () => treeView.layoutBounds().getWidth * hvalue(),
         treeView.layoutBounds,
