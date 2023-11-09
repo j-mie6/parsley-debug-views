@@ -10,7 +10,7 @@ Currently, until the `dev` branch containing my debugger extension passes all ch
 
 Each sub-project contains one frontend, currently:
 - `con_ui` (@ `con-ui`): A console pretty-printer, `ConsolePrettyPrinter`.
-- `sfx_ui` (@ `sfx-ui`): A [ScalaFX](https://www.scalafx.org/)-powered interactive GUI for exploring parser execution trees.
-- `json_info` (@ `json-info`): A (work-in-progress) JSON string generator.
+- `sfx_ui` (@ `sfx-ui`): A [ScalaFX](https://www.scalafx.org/)-powered interactive GUI for exploring parser execution trees, `FxGUI`.
+- `json_info` (@ `json-info`): A (work-in-progress) JSON string generator, `JsonFormatter` and `JsonStringFormatter`.
 
-After adding one of these projects as a dependency, use one of the attaching combinators in `parsley.debugger.combinators` to make a parser automatically call the attached frontend in order to process it.
+After adding one of these projects as a dependency, use one of the attaching combinators in `parsley.debugger.combinators` to make a parser automatically call the attached frontend in order to process it. You can find the frontends within the package `parsley.debugger.frontend`.
