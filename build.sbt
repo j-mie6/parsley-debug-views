@@ -75,15 +75,3 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   )
 
 Test / parallelExecution := false
-
-// Scoverage settings.
-coverageFailOnMinimum := false
-coverageHighlighting  := true
-val defaultCoverageMinimum = 80
-
-coverageMinimumStmtTotal        := defaultCoverageMinimum
-coverageMinimumBranchTotal      := defaultCoverageMinimum
-coverageMinimumStmtPerPackage   := defaultCoverageMinimum
-coverageMinimumBranchPerPackage := defaultCoverageMinimum
-coverageMinimumStmtPerFile      := defaultCoverageMinimum
-coverageMinimumBranchPerFile    := defaultCoverageMinimum
