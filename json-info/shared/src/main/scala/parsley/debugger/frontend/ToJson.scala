@@ -14,10 +14,10 @@ object ToJson {
 
     implicit def optionToJSON[J: ToJson]: ToJson[Option[J]] = {
       case Some(x) => x.toJson
-      case None    => ujson.Str("N/A")
+      case None    => ujson.Null
     }
 
-    implicit val intToJSON: ToJson[Int] = ujson.Num(_)
+    implicit val intToJSON: ToJson[Int] = (x: Int) => ujson.Num(x.toDouble)
 
     implicit val posToJSON: ToJson[(Int, Int)] = { case (l, c) =>
       ujson.Obj(
@@ -27,18 +27,21 @@ object ToJson {
     }
 
     implicit def mapToJson[V: ToJson]: ToJson[Map[String, V]] = (map: Map[String, V]) =>
-      ujson.Obj.from(map.iterator.map { case (name, v) => (name, v.toJson) })
+      ujson.Arr.from(map)(_._2.toJson)
 
     implicit val paToJSON: ToJson[ParseAttempt] = {
       case ParseAttempt(rawInput, fromOffset, toOffset, fromPos, toPos, success, result) =>
         ujson.Obj(
-          "input"    -> (if (fromOffset == toOffset) ujson.Null else rawInput.slice(fromOffset, toOffset).toJson),
+          "input"    -> (if (fromOffset == toOffset) ujson.Null else rawInput.slice(fromOffset, toOffset + 1).toJson),
           "position" -> ujson.Obj(
             "from" -> fromPos.toJson,
             "to"   -> toPos.toJson
           ),
           "success"  -> (if (success) "Yes" else "No").toJson,
-          "result"   -> result.toString.toJson
+          "result"   -> (result match {
+            case Some(r) => r.toString.toJson
+            case None    => ujson.Null
+          })
         )
     }
 
