@@ -42,7 +42,7 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui)
+lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server)
 
 lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -81,6 +81,29 @@ lazy val sfx_ui = crossProject(JVMPlatform)
     commonSettings,
     name                := "parsley-debug-sfx",
     libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30"
+  )
+
+// Here's hoping the stable version of Http4S works fine!
+val http4sVersion   = "0.23.23" // For Scala 2.12 compatibility, this version is needed.
+val log4catsVersion = "2.6.0"
+
+lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("http-server"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      "org.http4s"    %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s"    %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s"    %%% "http4s-dsl"          % http4sVersion,
+      "org.typelevel" %%% "log4cats-core"       % log4catsVersion,
+      "org.typelevel" %%% "log4cats-noop"       % log4catsVersion,
+      "com.lihaoyi"   %%% "ujson"               % ujsonVersion
+    )
+  )
+  .jvmSettings(
+    libraryDependencies += "org.typelevel" %%% "log4cats-slf4j" % log4catsVersion
   )
 
 Test / parallelExecution := false
