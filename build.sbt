@@ -42,7 +42,7 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui)
+lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server)
 
 lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
