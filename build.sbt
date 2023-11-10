@@ -73,4 +73,20 @@ lazy val sfx_ui = crossProject(JVMPlatform)
     libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30"
   )
 
+// Here's hoping the stable version of Http4S works fine!
+val http4sVersion = "0.23.23"
+
+lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("http-server"))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s" %%% "http4s-dsl"          % http4sVersion
+    )
+  )
+
 Test / parallelExecution := false
