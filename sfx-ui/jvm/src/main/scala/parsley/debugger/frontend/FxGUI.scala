@@ -34,7 +34,7 @@ import scalafx.stage.Stage
   * shows where in the input the parse attempt was made, highlighted in bold, green, and underlined text within the rest
   * of the input.
   */
-final class FxGUI(fontMult: Double) extends StatelessFrontend {
+final class FxGUI private[frontend] (fontMult: Double) extends StatelessFrontend {
   implicit private val gfMult: Double = fontMult
 
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
