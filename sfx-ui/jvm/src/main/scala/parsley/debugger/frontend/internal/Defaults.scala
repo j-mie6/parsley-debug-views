@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend
+package parsley.debugger.frontend.internal
 
 import scalafx.geometry.Insets
 import scalafx.scene.layout.{
@@ -19,11 +19,11 @@ import scalafx.scene.paint.{Color, Paint}
 import scalafx.scene.text.{Font, FontWeight}
 
 // This will contain common constants and methods.
-package object internal {
+private[frontend] object Defaults {
   // Default background; #f4f4f4.
-  private[frontend] val DefaultBGColour: Color = Color.rgb(244, 244, 244)
+  val DefaultBGColour: Color = Color.rgb(244, 244, 244)
 
-  private[frontend] val DefaultBackground: Background = new Background(
+  val DefaultBackground: Background = new Background(
     Array(
       new BackgroundFill(
         DefaultBGColour,
@@ -33,11 +33,11 @@ package object internal {
     )
   )
 
-  private[frontend] val SuccessColour: Color = Color.LightGreen
+  val SuccessColour: Color = Color.LightGreen
 
-  private[frontend] val FailureColour: Color = Color.rgb(201, 115, 109)
+  val FailureColour: Color = Color.rgb(201, 115, 109)
 
-  private[frontend] def simpleBackground(fill: Paint): Background = new Background(
+  def simpleBackground(fill: Paint): Background = new Background(
     Array(
       new BackgroundFill(
         fill,
@@ -47,7 +47,7 @@ package object internal {
     )
   )
 
-  private[frontend] def simpleBorder(
+  def simpleBorder(
     style: BorderStrokeStyle
   )(implicit globalMult: Double): Border = new Border(
     new BorderStroke(
@@ -58,20 +58,20 @@ package object internal {
     )
   )
 
-  private[frontend] def simpleInsets(multiplier: Double)(implicit globalMult: Double): Insets =
+  def simpleInsets(multiplier: Double)(implicit globalMult: Double): Insets =
     Insets(relativeSize(multiplier))
 
   // For easy use, all sizes will be relative to the default font size.
-  private[frontend] def relativeSize(multiplier: Double)(implicit globalMult: Double): Double =
+  def relativeSize(multiplier: Double)(implicit globalMult: Double): Double =
     Font.default.size * multiplier * globalMult
 
-  private[frontend] def defaultFont(
+  def defaultFont(
     multiplier: Double,
     weight: FontWeight = FontWeight.Normal
   )(implicit globalMult: Double): Font =
     Font(Font.default.family, weight, relativeSize(multiplier))
 
-  private[frontend] def monoFont(
+  def monoFont(
     multiplier: Double,
     weight: FontWeight = FontWeight.Normal
   )(implicit globalMult: Double): Font =

@@ -14,9 +14,17 @@ import parsley.debugger.frontend.internal.consolepretty._
   *
   * Technically not a GUI.
   */
-case object ConsolePrettyPrinter extends StatelessFrontend {
+final class ConsolePrettyPrinter private[frontend] (ioF: String => Unit) extends StatelessFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
-    println(s"${tree.parserName}'s parse tree for input:\n\n${input}\n")
-    println(tree.pretty)
+    ioF(s"${tree.parserName}'s parse tree for input:\n\n${input}\n\n")
+    ioF(tree.pretty + "\n")
   }
+}
+
+object ConsolePrettyPrinter {
+  /** Create a `println` console pretty printer. */
+  def apply(): ConsolePrettyPrinter = apply(println(_))
+
+  /** Create a string pretty-printer that takes an arbitrary impure string function. */
+  def apply(ioF: String => Unit) = new ConsolePrettyPrinter(ioF)
 }

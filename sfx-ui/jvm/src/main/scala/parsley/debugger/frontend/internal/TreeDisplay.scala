@@ -8,6 +8,7 @@ package parsley.debugger.frontend.internal
 import javafx.event.EventHandler
 import javafx.scene.input.MouseEvent
 import parsley.debugger.DebugTree
+import parsley.debugger.frontend.internal.Defaults._
 import parsley.debugger.frontend.internal.TreeDisplay.mkTree
 import scalafx.Includes._
 import scalafx.beans.binding.Bindings
