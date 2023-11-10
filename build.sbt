@@ -90,6 +90,7 @@ val log4catsVersion = "2.6.0"
 lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
+  .dependsOn(json_info) // We want the CJson type class here too.
   .in(file("http-server"))
   .settings(
     commonSettings,
