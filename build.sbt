@@ -53,8 +53,15 @@ lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "parsley-debug-console"
   )
 
-// ujson used by multiple projects.
-val ujsonVersion = "3.0.0"
+// Circe JSON library.
+val circeVersion = "0.14.6"
+lazy val circe   = Seq(
+  libraryDependencies ++= Seq(
+    "io.circe" %%% "circe-core",
+    "io.circe" %%% "circe-generic",
+    "io.circe" %%% "circe-parser"
+  ).map(_ % circeVersion)
+)
 
 lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -62,8 +69,8 @@ lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("json-info"))
   .settings(
     commonSettings,
-    name                := "parsley-debug-json",
-    libraryDependencies += "com.lihaoyi" %%% "ujson" % ujsonVersion
+    name := "parsley-debug-json",
+    circe
   )
 
 lazy val sfx_ui = crossProject(JVMPlatform)
