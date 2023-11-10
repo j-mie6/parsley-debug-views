@@ -83,19 +83,14 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     commonSettings,
     libraryDependencies ++= Seq(
-      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
-      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
-      "org.http4s" %%% "http4s-dsl"          % http4sVersion
+      "org.http4s"    %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s"    %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s"    %%% "http4s-dsl"          % http4sVersion,
+      "org.typelevel" %%% "log4cats-core"       % "2.6.0"
     )
   )
   .jvmSettings(
     libraryDependencies += "org.typelevel" %%% "log4cats-slf4j" % "2.6.0"
-  )
-  .jsSettings(
-    libraryDependencies += "org.typelevel" %%% "log4cats-core" % "2.6.0"
-  )
-  .nativeSettings(
-    libraryDependencies += "org.typelevel" %%% "log4cats-core" % "2.6.0"
   )
 
 Test / parallelExecution := false
