@@ -26,7 +26,7 @@ object JsonFormatter {
   def apply(cont: ujson.Value => Unit): JsonFormatter = new JsonFormatter(cont)
 }
 
-/** A version of [[JsonFormatter]] that takes a JSON string instead of a [[ujson.Value]] object. */
+/** A version of [[JsonFormatter]] that emits a JSON string instead of a [[ujson.Value]] object. */
 class JsonStringFormatter(cont: String => Unit, indent: Int = 2, escapeUnicode: Boolean = false)
   extends JsonFormatter(json => cont(json.render(indent, escapeUnicode = escapeUnicode)))
 

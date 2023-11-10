@@ -8,6 +8,7 @@ package parsley.debugger.frontend
 import javafx.embed.swing.JFXPanel
 import parsley.debugger.DebugTree
 import parsley.debugger.frontend.internal._
+import parsley.debugger.frontend.internal.Defaults._
 import scalafx.application.Platform
 import scalafx.beans.property.{DoubleProperty, ObjectProperty}
 import scalafx.scene.Scene
