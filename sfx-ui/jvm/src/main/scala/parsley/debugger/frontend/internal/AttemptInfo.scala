@@ -6,6 +6,7 @@
 package parsley.debugger.frontend.internal
 
 import parsley.debugger.{DebugTree, ParseAttempt}
+import parsley.debugger.frontend.internal.Defaults._
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.ObjectProperty
 import scalafx.geometry.Pos

@@ -8,6 +8,7 @@ package parsley.debugger.frontend
 import javafx.embed.swing.JFXPanel
 import parsley.debugger.DebugTree
 import parsley.debugger.frontend.internal._
+import parsley.debugger.frontend.internal.Defaults._
 import scalafx.application.Platform
 import scalafx.beans.property.{DoubleProperty, ObjectProperty}
 import scalafx.scene.Scene
@@ -33,7 +34,7 @@ import scalafx.stage.Stage
   * shows where in the input the parse attempt was made, highlighted in bold, green, and underlined text within the rest
   * of the input.
   */
-class FxGUI(fontMult: Double) extends StatelessFrontend {
+final class FxGUI private[frontend] (fontMult: Double) extends StatelessFrontend {
   implicit private val gfMult: Double = fontMult
 
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {

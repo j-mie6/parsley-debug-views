@@ -1,13 +1,13 @@
-package parsley.debugger.frontend
+package parsley.debugger.frontend.internal
 
 import parsley.debugger.{DebugTree, ParseAttempt}
 
 // Small type class for quickly converting objects into JSON.
-trait ToJson[-T] extends (T => ujson.Value) {
+private[frontend] trait ToJson[-T] extends (T => ujson.Value) {
   def apply(obj: T): ujson.Value
 }
 
-object ToJson {
+private[frontend] object ToJson {
   // Used instances for ToJson.
   object Implicits {
     implicit val stringToJSON: ToJson[String] = ujson.Str(_)
