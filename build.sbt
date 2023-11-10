@@ -69,8 +69,7 @@ lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("json-info"))
   .settings(
     commonSettings,
-    name                := "parsley-debug-json",
-    libraryDependencies += "com.lihaoyi" %%% "ujson" % "3.0.0",
+    name := "parsley-debug-json",
     circe
   )
 
