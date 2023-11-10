@@ -12,7 +12,7 @@ import parsley.debugger.frontend.internal.ToJson.Implicits._
   * impure. It is recommended that if one wants to extract multiple inputs from the same frontend with the same
   * continuation, that it is recorded to some kind of list or iterable structure.
   */
-class JsonFormatter(cont: ujson.Value => Unit) extends StatelessFrontend {
+sealed class JsonFormatter(cont: ujson.Value => Unit) extends StatelessFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit =
     cont(
       ujson.Obj(
@@ -27,7 +27,7 @@ object JsonFormatter {
 }
 
 /** A version of [[JsonFormatter]] that emits a JSON string instead of a [[ujson.Value]] object. */
-class JsonStringFormatter(cont: String => Unit, indent: Int = 2, escapeUnicode: Boolean = false)
+final class JsonStringFormatter(cont: String => Unit, indent: Int = 2, escapeUnicode: Boolean = false)
   extends JsonFormatter(json => cont(json.render(indent, escapeUnicode = escapeUnicode)))
 
 object JsonStringFormatter {
