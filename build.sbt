@@ -53,6 +53,9 @@ lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "parsley-debug-console"
   )
 
+// ujson used by multiple projects.
+val ujsonVersion = "3.0.0"
+
 lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
@@ -60,7 +63,7 @@ lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .settings(
     commonSettings,
     name                := "parsley-debug-json",
-    libraryDependencies += "com.lihaoyi" %%% "ujson" % "3.0.0"
+    libraryDependencies += "com.lihaoyi" %%% "ujson" % ujsonVersion
   )
 
 lazy val sfx_ui = crossProject(JVMPlatform)
@@ -74,7 +77,8 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   )
 
 // Here's hoping the stable version of Http4S works fine!
-val http4sVersion = "0.23.23"
+val http4sVersion   = "0.23.23" // For Scala 2.12 compatibility, this version is needed.
+val log4catsVersion = "2.6.0"
 
 lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -86,11 +90,13 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.http4s"    %%% "http4s-ember-client" % http4sVersion,
       "org.http4s"    %%% "http4s-ember-server" % http4sVersion,
       "org.http4s"    %%% "http4s-dsl"          % http4sVersion,
-      "org.typelevel" %%% "log4cats-core"       % "2.6.0"
+      "org.typelevel" %%% "log4cats-core"       % log4catsVersion,
+      "org.typelevel" %%% "log4cats-noop"       % log4catsVersion,
+      "com.lihaoyi"   %%% "ujson"               % ujsonVersion
     )
   )
   .jvmSettings(
-    libraryDependencies += "org.typelevel" %%% "log4cats-slf4j" % "2.6.0"
+    libraryDependencies += "org.typelevel" %%% "log4cats-slf4j" % log4catsVersion
   )
 
 Test / parallelExecution := false
