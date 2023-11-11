@@ -25,15 +25,19 @@ private[frontend] object ToHTML {
               <div class="info">
                 <table>
                   <tr>
-                    <th>Input: </th><td>{s"\"${ri.slice(fo, to + 1)}\""}</td>
+                    <th>{s"${dt.parserName} (${dt.internalName})"}</th><td>{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}</td>
                   </tr>
 
                   <tr>
-                    <th>Position: </th><td>{s"$fp to $tp"}</td>
+                    <th>Input:</th><td>{s"\"${ri.slice(fo, to + 1)}\""}</td>
                   </tr>
 
                   <tr>
-                    <th>Result: </th><td>{if (sc) res.toString else "[N/A]"}</td>
+                    <th>Position:</th><td>{s"$fp to $tp"}</td>
+                  </tr>
+
+                  <tr>
+                    <th>Result:</th><td>{if (sc) res.toString else "[N/A]"}</td>
                   </tr>
                 </table>
               </div>

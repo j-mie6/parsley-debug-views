@@ -9,6 +9,7 @@ private[frontend] object Styles {
       |body {
       |  background-color: #f0f0f0;
       |  font-family: monospace;
+      |  font-size: 12px;
       |}
       |
       |th {
@@ -21,11 +22,11 @@ private[frontend] object Styles {
       |}
       |
       |h1 {
-      |  font-size: 32px;
+      |  font-size: 48px;
       |}
       |
       |.large {
-      |  font-size: 16px;
+      |  font-size: 24px;
       |}
       |
       |.parser {
@@ -40,13 +41,20 @@ private[frontend] object Styles {
       |  align-self: center;
       |  text-align: center;
       |
-      |  margin-top: -2.3em;
       |  padding-left: 1.25em;
       |  padding-right: 1.25em;
-      |  margin-left: 0.35em;
+      |
+      |  top: -70%;
+      |  left: 50%;
+      |  margin-right: -50%;
+      |  margin-bottom: -170%;
+      |  transform: translate(-50%, 50%);
       |
       |  background-color: #f0f0f0;
       |  font-weight: bold;
+      |  font-size: 14px;
+      |
+      |  z-index: 99 !important;
       |}
       |
       |.dotted {
@@ -70,12 +78,18 @@ private[frontend] object Styles {
       |  z-index: 999 !important;
       |}
       |
+      |.info th {
+      |  padding-right: 1em !important;
+      |}
+      |
       |.info * {
       |  vertical-align: baseline;
       |}
       |
       |.attempt {
+      |  position: relative;
       |  display: block;
+      |
       |  margin: 0.5em;
       |  padding-top: 0.125em;
       |  padding-bottom: 0.125em;
