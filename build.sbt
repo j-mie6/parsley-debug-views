@@ -97,12 +97,13 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name                 := "parsley-debug-http",
     circe,
     libraryDependencies ++= Seq(
-      "org.http4s"    %%% "http4s-ember-client" % http4sVersion,
-      "org.http4s"    %%% "http4s-ember-server" % http4sVersion,
-      "org.http4s"    %%% "http4s-dsl"          % http4sVersion,
-      "org.http4s"    %%% "http4s-circe"        % http4sVersion,
-      "org.typelevel" %%% "log4cats-core"       % log4catsVersion,
-      "org.typelevel" %%% "log4cats-noop"       % log4catsVersion
+      "org.http4s"             %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s"             %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s"             %%% "http4s-dsl"          % http4sVersion,
+      "org.http4s"             %%% "http4s-circe"        % http4sVersion,
+      "org.typelevel"          %%% "log4cats-core"       % log4catsVersion,
+      "org.typelevel"          %%% "log4cats-noop"       % log4catsVersion,
+      "org.scala-lang.modules" %%% "scala-xml"           % "2.2.0",
     )
   )
   .jvmSettings(
