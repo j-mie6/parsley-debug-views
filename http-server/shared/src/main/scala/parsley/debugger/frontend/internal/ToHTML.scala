@@ -12,40 +12,53 @@ private[frontend] object ToHTML {
     def toHTML: Node = implicitly[ToHTML[V]].apply(x)
   }
 
+  val ampSeq: String = "-[-{AMP}-]-"
+
+  // format: off
   implicit lazy val dtToH: ToHTML[DebugTree] = (dt: DebugTree) =>
     dt.parseResults.get match {
       case ParseAttempt(ri, fo, to, fp, tp, sc, res) =>
-        <div class={if (dt.internalName != dt.parserName) "parser dotted" else "parser"}>
-          {if (dt.internalName != dt.parserName) <p class="nickname">{dt.parserName}</p> else <!-- Name intact. -->}
-          <div class={"attempt " + (if (sc) "success" else "failure")}>
-            <div class="info">
-              <table>
-                <tr>
-                  <th>Input:</th><td>{s"\"${ri.slice(fo, to + 1)}\""}</td>
-                </tr>
+        <table class={if (dt.internalName != dt.parserName) "parser dotted" else "parser"}>
+          <tr>
+            <td class={"attempt " + (if (sc) "success" else "failure")}>
+              {if (dt.internalName != dt.parserName) <p class="nickname">{dt.parserName}</p> else <!-- Name intact. -->}
+              <div class="info">
+                <table>
+                  <tr>
+                    <th>Input: </th><td>{s"\"${ri.slice(fo, to + 1)}\""}</td>
+                  </tr>
 
-                <tr>
-                  <th>Position:</th><td>{s"$fp to $tp"}</td>
-                </tr>
+                  <tr>
+                    <th>Position: </th><td>{s"$fp to $tp"}</td>
+                  </tr>
 
+                  <tr>
+                    <th>Result: </th><td>{if (sc) res.toString else "[N/A]"}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <p class="overview">
+                {dt.internalName}<br />{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              {
+              if (dt.nodeChildren.nonEmpty) {
+              <table class="children">
                 <tr>
-                  <th>Result:</th><td>{if (sc) res.toString else "[N/A]"}</td>
+                  {dt.nodeChildren.iterator.map { case (_, p) => <td>{dtToH.apply(p)}</td> }}
                 </tr>
               </table>
-            </div>
-
-            <p>
-              {dt.internalName}<br />{if (sc) "Success" else "Failure"}
-            </p>
-          </div>
-          {
-          if (dt.nodeChildren.nonEmpty) {
-          <div class="children">
-            {dt.nodeChildren.iterator.map { case (_, p) => dtToH.apply(p) }}
-          </div>
-          } else
-          <!-- No children. -->
-        }
-        </div>
+              } else {
+              <!-- No children. -->
+              }
+              }
+            </td>
+          </tr>
+        </table>
     }
+  // format: on
 }
