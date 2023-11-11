@@ -29,6 +29,13 @@ private[frontend] object Styles {
       |  font-size: 24px;
       |}
       |
+      |.toc {
+      |  display: flex;
+      |  flex-direction: row;
+      |  gap: 1em;
+      |  align-content: flex-start;
+      |}
+      |
       |.parser {
       |  margin: 0;
       |  padding: 0;
@@ -72,10 +79,11 @@ private[frontend] object Styles {
       |  border-color: #212223;
       |
       |  padding: 0.7em;
-      |  left: 5em;
-      |  bottom: 5em;
+      |  left: 3em;
+      |  bottom: 3em;
       |
       |  z-index: 999 !important;
+      |  font-size: 18px !important;
       |}
       |
       |.info th {
