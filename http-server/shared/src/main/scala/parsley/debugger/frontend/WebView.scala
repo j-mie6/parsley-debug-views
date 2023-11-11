@@ -57,7 +57,7 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int) 
 
         <body>
           <h1>Input</h1>
-          {s"\"$input\""}
+          <p class="large">{s"\"$input\""}</p>
           <hr />
           <h1>Parse Tree</h1>
           {tree.toHTML}

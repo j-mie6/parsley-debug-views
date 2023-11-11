@@ -20,6 +20,14 @@ private[frontend] object Styles {
       |  margin: 0;
       |}
       |
+      |h1 {
+      |  font-size: 32px;
+      |}
+      |
+      |.large {
+      |  font-size: 16px;
+      |}
+      |
       |.parser {
       |  margin: 0;
       |  padding: 0;
@@ -48,17 +56,16 @@ private[frontend] object Styles {
       |}
       |
       |.info {
-      |  position: absolute;
-      |  display: block;
-      |  visibility: hidden;
+      |  position: fixed;
+      |  display: none;
       |
       |  background-color: #ffffff;
       |  border: 2px solid;
       |  border-color: #212223;
       |
       |  padding: 0.7em;
-      |  left: 50%;
-      |  transform: translate(-50%, -0.2em);
+      |  left: 5em;
+      |  bottom: 5em;
       |
       |  z-index: 999 !important;
       |}
@@ -81,9 +88,8 @@ private[frontend] object Styles {
       |}
       |
       |.attempt:hover .info {
-      |  position: absolute;
-      |  visibility: visible;
-      |  display: block;
+      |  position: fixed;
+      |  display: flex;
       |}
       |
       |.children:last-child > .attempt:hover .info {
