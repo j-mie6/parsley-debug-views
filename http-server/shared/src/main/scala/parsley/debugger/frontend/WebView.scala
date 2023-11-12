@@ -187,6 +187,7 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int, 
     val printer = new PrettyPrinter(640, spaces)
     val sb      = new StringBuilder()
 
+    // format: off
     val page =
       <html>
         <head>
@@ -200,11 +201,20 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int, 
           <h1>Input</h1>
           <p class="large">{s"\"$input\""}</p>
           <hr />
+          <h1>Output</h1>
+          <p class="large">
+            {tree.parseResults match {
+              case Some(ans) => ans.toString
+              case None      => "[N/A]"
+            }}
+          </p>
+          <hr/>
           <h1>Parse Tree</h1>
           {tree.toHTML}
           {additions}
         </body>
       </html>
+    // format: on
 
     printer.format(page, sb)
 

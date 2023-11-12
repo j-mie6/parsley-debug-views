@@ -39,6 +39,7 @@ private[frontend] object Styles {
       |  flex-direction: row;
       |  gap: 1em;
       |  align-content: flex-start;
+      |  max-width: 40em;
       |}
       |
       |.parser {
