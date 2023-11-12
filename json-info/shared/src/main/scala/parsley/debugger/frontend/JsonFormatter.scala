@@ -19,6 +19,9 @@ import parsley.debugger.frontend.internal.CJson.*
   * This continuation must return unit, as there are not many other ways to make it useful other than making this
   * impure. It is recommended that if one wants to extract multiple inputs from the same frontend with the same
   * continuation, that it is recorded to some kind of list or iterable structure.
+  *
+  * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
+  * on attaching debuggers to find out how to prevent that.
   */
 sealed class JsonFormatter private[frontend] (cont: Output => Unit) extends StatelessFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit =

@@ -37,6 +37,9 @@ import parsley.debugger.frontend.internal.Styles
   * most likely `IO`.
   *
   * `cont` will be called once when the server begins. Pass the server initialiser computation to your `cats` runtime.
+  *
+  * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
+  * on attaching debuggers to find out how to prevent that.
   */
 sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
   cont: F[Resource[F, Server]] => G,
