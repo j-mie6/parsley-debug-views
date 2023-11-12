@@ -6,7 +6,7 @@
 package parsley.debugger.frontend.internal
 
 import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.Defaults._
+import parsley.debugger.frontend.internal.Defaults.*
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.ObjectProperty
 import scalafx.scene.control.ScrollPane

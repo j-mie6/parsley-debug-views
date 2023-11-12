@@ -8,9 +8,9 @@ package parsley.debugger.frontend.internal
 import javafx.event.EventHandler
 import javafx.scene.input.MouseEvent
 import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.Defaults._
+import parsley.debugger.frontend.internal.Defaults.*
 import parsley.debugger.frontend.internal.TreeDisplay.mkTree
-import scalafx.Includes._
+import scalafx.Includes.*
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.{BooleanProperty, DoubleProperty, ObjectProperty}
 import scalafx.geometry.{Insets, Pos}
@@ -18,7 +18,7 @@ import scalafx.scene.{Group, Scene}
 import scalafx.scene.control.ScrollPane
 import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import scalafx.scene.input.MouseButton
-import scalafx.scene.layout._
+import scalafx.scene.layout.*
 import scalafx.scene.paint.Color
 import scalafx.scene.text.{FontWeight, Text}
 import scalafx.scene.transform.Scale

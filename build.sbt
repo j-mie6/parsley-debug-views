@@ -42,7 +42,7 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui)
+lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server)
 
 lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -53,14 +53,24 @@ lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "parsley-debug-console"
   )
 
+// Circe JSON library.
+val circeVersion = "0.14.6"
+lazy val circe   = Seq(
+  libraryDependencies ++= Seq(
+    "io.circe" %%% "circe-core",
+    "io.circe" %%% "circe-generic",
+    "io.circe" %%% "circe-parser"
+  ).map(_ % circeVersion)
+)
+
 lazy val json_info = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("json-info"))
   .settings(
     commonSettings,
-    name                := "parsley-debug-json",
-    libraryDependencies += "com.lihaoyi" %%% "ujson" % "3.0.0"
+    name := "parsley-debug-json",
+    circe
   )
 
 lazy val sfx_ui = crossProject(JVMPlatform)
@@ -71,6 +81,33 @@ lazy val sfx_ui = crossProject(JVMPlatform)
     commonSettings,
     name                := "parsley-debug-sfx",
     libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30"
+  )
+
+// Here's hoping the stable version of Http4S works fine!
+val http4sVersion   = "0.23.23" // For Scala 2.12 compatibility, this version is needed.
+val log4catsVersion = "2.6.0"
+
+lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .dependsOn(json_info) // We want the CJson type class here too.
+  .in(file("http-server"))
+  .settings(
+    commonSettings,
+    name                 := "parsley-debug-http",
+    circe,
+    libraryDependencies ++= Seq(
+      "org.http4s"             %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s"             %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s"             %%% "http4s-dsl"          % http4sVersion,
+      "org.http4s"             %%% "http4s-circe"        % http4sVersion,
+      "org.typelevel"          %%% "log4cats-core"       % log4catsVersion,
+      "org.typelevel"          %%% "log4cats-noop"       % log4catsVersion,
+      "org.scala-lang.modules" %%% "scala-xml"           % "2.2.0"
+    )
+  )
+  .jvmSettings(
+    libraryDependencies += "org.typelevel" %%% "log4cats-slf4j" % log4catsVersion
   )
 
 Test / parallelExecution := false
