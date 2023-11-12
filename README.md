@@ -2,7 +2,7 @@
 
 [Parsley](https://github.com/j-mie6/Parsley) is a fast parser-combinator library for Scala based on
 Haskell's [Parsec](https://hackage.haskell.org/package/parsec).
-This is a set of frontends for the debugger extension I am making for Parsley, found [here](https://github.com/MF42-DZH/parsley/tree/dev).
+This is a set of frontends for the debugger extension I am making for Parsley, found [here](https://github.com/MF42-DZH/parsley/tree/dev) for now.
 
 ## Usage
 
@@ -69,7 +69,7 @@ The UI is shown as follows:
 
 ![An interactive GUI window displaying the paths the parser has taken during execution.](/media/parse-arith.png?raw=true)
 
-If for example you also had `parsley-debug-console` (the console pretty printer) as a dependency, then you can also easily switch over to using it from the ScalaFx GUI. Simply change these lines:
+If for example you also had `parsley-debug-console` (the console pretty printer) as a dependency, then you can also easily switch over to using it from the ScalaFX GUI frontend. Simply change these lines:
 
 ```diff
 - import parsley.debugger.frontend.FxGUI
