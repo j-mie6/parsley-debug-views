@@ -12,6 +12,7 @@ Each sub-project contains one frontend, currently:
 - `parsley-debug-console` (@ `con-ui`): A console pretty-printer, `ConsolePrettyPrinter`.
 - `parsley-debug-sfx` (@ `sfx-ui`): A [ScalaFX](https://www.scalafx.org/)-powered interactive GUI for exploring parser execution trees, `FxGUI`.
 - `parsley-debug-json` (@ `json-info`): A JSON string generator, `JsonFormatter` and `JsonStringFormatter`.
+- `parsley-debug-http` (@ `http-server`): A [http4s](https://http4s.org/) web server providing a semi-interactive parse tree viewer.
 
 After adding one of these projects as a dependency, use one of the attaching combinators in `parsley.debugger.combinators` to make a parser automatically call the attached frontend in order to process it. You can find the frontends within the package `parsley.debugger.frontend`.
 

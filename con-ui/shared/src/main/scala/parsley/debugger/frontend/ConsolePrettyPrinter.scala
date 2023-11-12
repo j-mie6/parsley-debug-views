@@ -6,7 +6,7 @@
 package parsley.debugger.frontend
 
 import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.consolepretty._
+import parsley.debugger.frontend.internal.consolepretty.*
 
 /** A console pretty-printer for the debugger.
   *
@@ -16,7 +16,7 @@ import parsley.debugger.frontend.internal.consolepretty._
   */
 final class ConsolePrettyPrinter private[frontend] (ioF: String => Unit) extends StatelessFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
-    ioF(s"${tree.parserName}'s parse tree for input:\n\n${input}\n\n")
+    ioF(s"${tree.parserName}'s parse tree for input:\n\n$input\n\n")
     ioF(tree.pretty + "\n")
   }
 }

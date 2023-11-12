@@ -6,7 +6,7 @@
 package parsley.debugger.frontend.internal
 
 import org.typelevel.scalaccompat.annotation.unused
-import parsley.debugger.frontend.internal.Defaults._
+import parsley.debugger.frontend.internal.Defaults.*
 import scalafx.geometry.Orientation
 import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.SplitPane
