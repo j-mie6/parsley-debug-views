@@ -40,6 +40,7 @@ private[frontend] object Styles {
       |  gap: 1em;
       |  align-content: flex-start;
       |  max-width: 40em;
+      |  flex-wrap: wrap;
       |}
       |
       |.parser {

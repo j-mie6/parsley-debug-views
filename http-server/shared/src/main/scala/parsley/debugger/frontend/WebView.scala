@@ -203,7 +203,7 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int, 
           <hr />
           <h1>Output</h1>
           <p class="large">
-            {tree.parseResults match {
+            {tree.parseResults.flatMap(_.result) match {
               case Some(ans) => ans.toString
               case None      => "[N/A]"
             }}
