@@ -7,23 +7,24 @@ package parsley.debugger.frontend
 
 import scala.collection.mutable
 import scala.xml.{Node, PrettyPrinter}
-
-import cats._
-import cats.effect._
-import cats.implicits._
-import com.comcast.ip4s._
+import cats.*
+import cats.data.Validated
+import cats.effect.*
+import cats.implicits.*
+import com.comcast.ip4s.*
 import fs2.io.net.Network
-import org.http4s._
-import org.http4s.dsl._
-import org.http4s.ember.server._
+import org.http4s.*
+import org.http4s.dsl.*
+import org.http4s.dsl.impl.*
+import org.http4s.ember.server.*
 import org.http4s.headers.`Content-Type`
-import org.http4s.implicits._
+import org.http4s.implicits.*
 import org.http4s.server.Server
 import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.syntax._
+import org.typelevel.log4cats.syntax.*
 import org.typelevel.scalaccompat.annotation.unused
 import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.ToHTML._
+import parsley.debugger.frontend.internal.ToHTML.*
 import parsley.debugger.frontend.internal.Styles
 
 /** A frontend that uses `http4s` and the Ember server to provide an interactive web frontend for debugging parsers.
@@ -43,6 +44,11 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
   private val seen: mutable.ListBuffer[(String, DebugTree)] = new mutable.ListBuffer()
   private var started: Boolean = false
 
+  // Download query matcher
+  private object TreeMatcher extends ValidatingQueryParamDecoderMatcher[Int]("tree")
+
+  private object PrettyMatcher extends FlagQueryParamMatcher("pretty")
+
   // And here is where we will setup and create the server
   def start(): F[Resource[F, Server]] = {
     val routes: HttpRoutes[F] = {
@@ -50,21 +56,46 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
       import dsl._
 
       HttpRoutes.of[F] {
-        case GET -> Root / ix =>
-          ix.toIntOption match {
-            case Some(index) =>
-              val ix = index - 1
+        case GET -> Root / "download" :? TreeMatcher(index) +& PrettyMatcher(pretty) =>
+          index match {
+            case Validated.Valid(idx) =>
+              val ix = idx - 1
+              if (ix < 0) {
+                BadRequest("Zero or negative index given.")
+              } else if (ix >= seen.length) {
+                NotFound("Index out of bounds.")
+              } else {
+                var result = ""
+                JsonStringFormatter(r => { result = r }, pretty = pretty).process(seen(ix)._1, seen(ix)._2)
+
+                Ok(result).map(_.putHeaders(`Content-Type`.parse("text/json")))
+              }
+            case Validated.Invalid(e) => BadRequest(s"Invalid parse for index: $e")
+          }
+        case GET -> Root / "view" :? TreeMatcher(index)                              =>
+          index match {
+            case Validated.Valid(idx) =>
+              val ix = idx - 1
               if (ix < 0) {
                 BadRequest("Zero or negative index given.")
               } else if (ix >= seen.length) {
                 NotFound("Index out of bounds.")
               } else {
                 // format: off
-                val additions = List(<hr />, <h1>Parses</h1>, <div class="toc large">
-                  {seen.indices.map { ix =>
-                    <a href={"/" + (ix + 1).toString}>{ix + 1}</a>
-                  }}
-                </div>)
+                val additions = List(
+                    <hr />,
+                    <p class="large">
+                      <a href="/download?tree=1">Download this debug output as JSON</a>
+                      <br />
+                      <a href={s"/download?tree=1${ampSeq}pretty"}>(Prettified JSON)</a>
+                    </p>,
+                    <hr />,
+                    <h1>Parse Trees</h1>,
+                    <div class="toc large">
+                      {seen.indices.map { ix =>
+                      <a href={"/view?tree=" + (ix + 1).toString}>{ix + 1}</a>
+                      }}
+                    </div>)
                 // format: on
 
                 var result = ""
@@ -72,9 +103,9 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
 
                 Ok(result).map(_.putHeaders(`Content-Type`.parse("text/html")))
               }
-            case None        => BadRequest("Non-integer index given.")
+            case Validated.Invalid(e) => BadRequest(s"Invalid parse for index: $e")
           }
-        case _                => NotFound("Debug tree at that index not found.")
+        case _ => NotFound("Debug tree at that index not found.")
       }
     }
 
@@ -90,7 +121,7 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
           .withHttpApp(app)
           .build
       }
-      _   <- info"Find your trees (as you process them) at $host:$port/[index of tree (starting at 1)]."
+      _   <- info"Find your trees (as you process them) at $host:$port/view?tree=[index of tree (starting at 1)]."
     } yield srv
   }
 

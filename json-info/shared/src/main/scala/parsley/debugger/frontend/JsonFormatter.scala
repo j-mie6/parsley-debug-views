@@ -35,20 +35,42 @@ object JsonFormatter {
 }
 
 /** A version of [[JsonFormatter]] that emits a JSON string instead of a [[io.circe.Json]] object. */
-final class JsonStringFormatter private[frontend] (cont: String => Unit, indent: Int, escapeUnicode: Boolean)
-  extends JsonFormatter(json =>
-    cont(
-      json.printWith(
-        new Printer(
-          indent = List.fill(indent)(' ').mkString(""), // .repeat() is not portable
-          escapeNonAscii = escapeUnicode,
-          dropNullValues = false
-        )
+final class JsonStringFormatter private[frontend] (
+  cont: String => Unit,
+  pretty: Boolean,
+  indent: Int,
+  escapeUnicode: Boolean
+) extends JsonFormatter(json => {
+    val printer = if (pretty) {
+      new Printer(
+        indent = List.fill(indent)(' ').mkString(""), // .repeat() is not portable
+        escapeNonAscii = escapeUnicode,
+        dropNullValues = false,
+        lbraceRight = "\n",
+        rbraceLeft = "\n",
+        lbracketRight = "\n",
+        rbracketLeft = "\n",
+        colonRight = " ",
+        arrayCommaRight = "\n",
+        objectCommaRight = "\n"
       )
-    )
-  )
+    } else {
+      new Printer(
+        indent = List.fill(indent)(' ').mkString(""), // .repeat() is not portable
+        escapeNonAscii = escapeUnicode,
+        dropNullValues = false
+      )
+    }
+
+    cont(json.printWith(printer))
+  })
 
 object JsonStringFormatter {
-  def apply(cont: String => Unit, indent: Int = 2, escapeUnicode: Boolean = false): JsonStringFormatter =
-    new JsonStringFormatter(cont, indent, escapeUnicode)
+  def apply(
+    cont: String => Unit,
+    pretty: Boolean = true,
+    indent: Int = 2,
+    escapeUnicode: Boolean = false
+  ): JsonStringFormatter =
+    new JsonStringFormatter(cont, pretty, indent, escapeUnicode)
 }
