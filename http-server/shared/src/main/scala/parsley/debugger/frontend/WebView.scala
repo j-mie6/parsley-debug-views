@@ -11,6 +11,7 @@ import scala.xml.{Node, PrettyPrinter}
 import cats.*
 import cats.data.Validated
 import cats.effect.*
+import cats.effect.unsafe.IORuntime
 import cats.implicits.*
 import com.comcast.ip4s.*
 import fs2.io.net.Network
@@ -22,6 +23,7 @@ import org.http4s.headers.`Content-Type`
 import org.http4s.implicits.*
 import org.http4s.server.Server
 import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.noop.NoOpLogger
 import org.typelevel.log4cats.syntax.*
 import org.typelevel.scalaccompat.annotation.unused
 import parsley.debugger.DebugTree
@@ -36,7 +38,7 @@ import parsley.debugger.frontend.internal.Styles
   *
   * `cont` will be called once when the server begins. Pass the server initialiser computation to your `cats` runtime.
   */
-final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
+sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
   cont: F[Resource[F, Server]] => G,
   host: Hostname,
   port: Port
@@ -145,6 +147,36 @@ object WebView {
     port: Port = port"8080"
   ): WebView[F, G] =
     new WebView(cont, host, port) // "pure", yeah right.
+}
+
+/** A version of [[WebView]] for those who don't care about `cats` and just want something that works. The only problem
+  * is that this may not work on all platforms.
+  *
+  * @note
+  *   Depending on platform, you may want to keep the application from terminating should you want to keep the server
+  *   running after your parsers have run.
+  */
+object WebViewUnsafeIO {
+  implicit val defaultIoRuntime: IORuntime = IORuntime.global
+
+  def make(
+    host: Hostname = host"localhost",
+    port: Port = port"8080",
+    logger: Logger[IO] = NoOpLogger[IO]
+  ): WebView[IO, Unit] = {
+    implicit val log: Logger[IO] = logger
+
+    new WebView[IO, Unit](
+      serverStart => {
+        (for {
+          serv <- serverStart
+          res  <- serv.useForever.as(())
+        } yield res).unsafeRunAsync(_ => ())
+      },
+      host,
+      port
+    )
+  }
 }
 
 /** A raw HTML formatter for debug trees. */
