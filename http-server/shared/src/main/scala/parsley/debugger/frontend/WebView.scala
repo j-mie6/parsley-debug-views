@@ -7,6 +7,7 @@ package parsley.debugger.frontend
 
 import scala.collection.mutable
 import scala.xml.{Node, PrettyPrinter}
+
 import cats.*
 import cats.data.Validated
 import cats.effect.*
@@ -53,7 +54,7 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
   def start(): F[Resource[F, Server]] = {
     val routes: HttpRoutes[F] = {
       val dsl = Http4sDsl[F]
-      import dsl._
+      import dsl.*
 
       HttpRoutes.of[F] {
         case GET -> Root / "download" :? TreeMatcher(index) +& PrettyMatcher(pretty) =>

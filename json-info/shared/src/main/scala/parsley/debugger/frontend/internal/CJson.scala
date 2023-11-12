@@ -5,8 +5,8 @@
  */
 package parsley.debugger.frontend.internal
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
 
 import CJson.Output
 
@@ -67,6 +67,6 @@ private[frontend] object CJson {
       "name"     -> (if (dt.parserName != dt.internalName) s"${dt.parserName} (${dt.internalName})"
                  else dt.internalName).toJSON,
       "result"   -> dt.parseResults.toJSON,
-      "children" -> Json.arr(dt.nodeChildren.map { case (_, t) => dtToJSON(t) }.toVector: _*)
+      "children" -> Json.arr(dt.nodeChildren.map { case (_, t) => dtToJSON(t) }.toVector *)
     ).asJson
 }

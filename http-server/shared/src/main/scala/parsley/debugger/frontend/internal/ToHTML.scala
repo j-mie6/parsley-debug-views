@@ -5,7 +5,8 @@
  */
 package parsley.debugger.frontend.internal
 
-import scala.xml._
+import scala.xml.*
+
 import parsley.debugger.{DebugTree, ParseAttempt}
 
 private[frontend] trait ToHTML[-V] extends (V => Node) {

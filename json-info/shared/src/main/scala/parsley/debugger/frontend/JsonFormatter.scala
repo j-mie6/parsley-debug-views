@@ -5,11 +5,11 @@
  */
 package parsley.debugger.frontend
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
 
 import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.CJson._
+import parsley.debugger.frontend.internal.CJson.*
 
 /** A frontend that emits a JSON-format string representing the parse tree.
   *

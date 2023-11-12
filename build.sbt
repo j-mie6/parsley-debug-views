@@ -103,7 +103,7 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.http4s"             %%% "http4s-circe"        % http4sVersion,
       "org.typelevel"          %%% "log4cats-core"       % log4catsVersion,
       "org.typelevel"          %%% "log4cats-noop"       % log4catsVersion,
-      "org.scala-lang.modules" %%% "scala-xml"           % "2.2.0",
+      "org.scala-lang.modules" %%% "scala-xml"           % "2.2.0"
     )
   )
   .jvmSettings(
