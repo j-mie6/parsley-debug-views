@@ -19,6 +19,7 @@ private[frontend] object Styles {
       |
       |th {
       |  text-align: right;
+      |  min-width: max-content;
       |}
       |
       |td {
@@ -112,6 +113,10 @@ private[frontend] object Styles {
       |
       |  z-index: 999 !important;
       |  font-size: 18px !important;
+      |
+      |  max-height: 50vh;
+      |  max-width: 75vh;
+      |  overflow: scroll;
       |}
       |
       |.info th {
