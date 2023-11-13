@@ -32,7 +32,7 @@ private[frontend] object ToHTML {
   implicit lazy val dtToH: ToHTML[DebugTree] = new ToHTML[DebugTree] {
     override def apply[V1 <: DebugTree](dt: V1)(implicit funcTable: mutable.Buffer[String]): Node = {
       dt.parseResults.get match {
-        case ParseAttempt(ri, fo, to, fp, tp, sc, res) =>
+        case ParseAttempt(ri, _, _, fp, tp, sc, res) =>
           <table class={if (dt.internalName != dt.parserName) "parser dotted" else "parser"}>
             <tr>
               <td class={"attempt " + (if (sc) "success" else "failure")}>
@@ -44,7 +44,7 @@ private[frontend] object ToHTML {
                     </tr>
 
                     <tr>
-                      <th>Input:</th><td>{s"\"${ri.slice(fo, to + 1).replace("\r", "").replace("\n", nlSeq)}\""}</td>
+                      <th>Input:</th><td>{s"\"${ri.replace("\r", "").replace("\n", nlSeq)}\""}</td>
                     </tr>
 
                     <tr>

@@ -48,7 +48,7 @@ private[frontend] object CJson {
 
   implicit val paToJSON: CJson[ParseAttempt] = { case ParseAttempt(ri, fo, to, fp, tp, sc, res) =>
     JsonObject(
-      "input"    -> (if (fo == to) Json.Null else ri.slice(fo, to + 1).toJSON),
+      "input"    -> (if (fo == to) Json.Null else ri.toJSON),
       "position" -> JsonObject(
         "from" -> fp.toJSON,
         "to"   -> tp.toJSON
