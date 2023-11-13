@@ -72,14 +72,23 @@ private[frontend] object ToHTML {
                         val uuid = nextUid()
 
                         funcTable +=
-                          s"""var loaded_$uuid = false;
-                             |function load_tree_$uuid() {
-                             |  if (!loaded_$uuid) {
-                             |    document.getElementById("child_$uuid").innerHTML = `${dtToH.apply[DebugTree](p)}`;
-                             |    document.getElementById("child_$uuid").removeAttribute("onclick");
+                          s"""function load_tree_$uuid(e) {
+                             |  let target = document.getElementById("child_$uuid");
                              |
-                             |    loaded_uuid = true;
+                             |  if (target.firstElementChild && target.firstElementChild.className.indexOf("unloaded") !== 1) {
+                             |    target.innerHTML = `${dtToH.apply[DebugTree](p)}`;
+                             |
+                             |    if (target.hasAttribute("onclick")) {
+                             |      target.removeAttribute("onclick");
+                             |      target.addEventListener("click", load_tree_$uuid, false);
+                             |    }
+                             |  } else {
+                             |    target.innerHTML = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
                              |  }
+                             |
+                             |  var event = e ? e : window.event;
+                             |  event.cancelBubble = true;
+                             |  if (event.stopPropagation) event.stopPropagation();
                              |}
                              |
                              |funcs.push({ id: $uuid, fun: load_tree_$uuid });
