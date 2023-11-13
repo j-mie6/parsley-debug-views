@@ -35,7 +35,7 @@ private[frontend] object Styles {
       |  font-weight: normal !important;
       |}
       |
-      |#unfold-btn {
+      |.folds-btn {
       |  font-family: monospace;
       |  font-weight: bold;
       |  font-size: 14px;

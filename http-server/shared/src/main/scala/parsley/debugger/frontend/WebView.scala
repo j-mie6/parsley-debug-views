@@ -274,8 +274,12 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
           </p>
           <hr/>
           <h1>Parse Tree</h1>
-          <button id="unfold-btn" onclick="unfold_all()">
+          <button class="folds-btn" onclick="unfold_all()">
             Unfold All Children [!]
+          </button>
+
+          <button class="folds-btn" onclick="fold_all()">
+            Fold All Children [!]
           </button>
 
           {tree.toHTML}
@@ -290,16 +294,23 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
     def script(): String = {
       ("""<script>
          |var funcs = [];
+         |var folds = [];
          |
          |function unfold_all() {
          |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
-         |    document.getElementById("unfold-btn").remove();
          |    funcs.forEach((f) => f.fun());
+         |  }
+         |}
+         |
+         |function fold_all() {
+         |  if (confirm("Are you sure you want to fold all the trees? You will lose your unfolding progress!")) {
+         |    folds.forEach((f) => f.fun());
          |  }
          |}
          |
          |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
         """funcs.sort((a, b) => { return a.id - b.id; });
+          |folds.sort((a, b) => { return a.id - b.id; });
           |</script>""".stripMargin).amp.nl
     }
 

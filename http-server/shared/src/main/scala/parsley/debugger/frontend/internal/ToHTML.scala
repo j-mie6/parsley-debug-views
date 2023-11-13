@@ -31,11 +31,13 @@ private[frontend] object ToHTML {
   // format: off
   implicit lazy val dtToH: ToHTML[DebugTree] = new ToHTML[DebugTree] {
     override def apply[V1 <: DebugTree](dt: V1)(implicit funcTable: mutable.Buffer[String]): Node = {
+      val parentUuid = nextUid()
+
       dt.parseResults.get match {
         case ParseAttempt(ri, _, _, fp, tp, sc, res) =>
           <table class={if (dt.internalName != dt.parserName) "parser dotted" else "parser"}>
             <tr>
-              <td class={"attempt " + (if (sc) "success" else "failure")}>
+              <td id={s"parent_$parentUuid"} class={"attempt " + (if (sc) "success" else "failure")}>
                 {if (dt.internalName != dt.parserName) <p class="nickname">{dt.parserName}</p> else <!-- Name intact. -->}
                 <div class="info">
                   <table>
@@ -68,37 +70,61 @@ private[frontend] object ToHTML {
                 if (dt.nodeChildren.nonEmpty) {
                   <table class="children">
                     <tr>
-                      {dt.nodeChildren.iterator.map { case (_, p) =>
-                        val uuid = nextUid()
-
+                      {
                         funcTable +=
-                          s"""function load_tree_$uuid(e) {
-                             |  let target = document.getElementById("child_$uuid");
+                          s"""var subs_$parentUuid = [];
                              |
-                             |  if (target.firstElementChild && target.firstElementChild.className.indexOf("unloaded") !== 1) {
-                             |    target.innerHTML = `${dtToH.apply[DebugTree](p)}`;
-                             |
-                             |    if (target.hasAttribute("onclick")) {
-                             |      target.removeAttribute("onclick");
-                             |      target.addEventListener("click", load_tree_$uuid, false);
-                             |    }
-                             |  } else {
-                             |    target.innerHTML = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
-                             |  }
+                             |function unload_children_$parentUuid(e) {
+                             |  subs_$parentUuid.forEach((f) => f());
                              |
                              |  var event = e ? e : window.event;
                              |  event.cancelBubble = true;
                              |  if (event.stopPropagation) event.stopPropagation();
                              |}
-                             |
-                             |funcs.push({ id: $uuid, fun: load_tree_$uuid });
                              |""".stripMargin
 
-                        <td id={s"child_$uuid"} onclick={s"load_tree_$uuid()"}>
-                          <div class="unloaded attempt">
-                            <p>{p.parserName}<br />({p.internalName})</p>
-                          </div>
-                        </td> }}
+                        dt.nodeChildren.iterator.map { case (_, p) =>
+                          val uuid = nextUid()
+
+                          funcTable +=
+                            s"""function load_tree_$uuid(e) {
+                               |  let target = document.getElementById("child_$uuid");
+                               |
+                               |  if (target && target.firstElementChild && target.firstElementChild.className.indexOf("unloaded") !== 1) {
+                               |    target.innerHTML = `${dtToH.apply[DebugTree](p)}`;
+                               |
+                               |    if (target.hasAttribute("onclick")) {
+                               |      target.removeAttribute("onclick");
+                               |      target.addEventListener("click", load_tree_$uuid, false);
+                               |    }
+                               |
+                               |    let parent = document.getElementById("parent_$parentUuid");
+                               |    if (parent) parent.addEventListener("click", unload_children_$parentUuid, false);
+                               |  } else if (target) {
+                               |    target.innerHTML = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
+                               |  }
+                               |
+                               |  var event = e ? e : window.event;
+                               |  event.cancelBubble = true;
+                               |  if (event.stopPropagation) event.stopPropagation();
+                               |}
+                               |
+                               |function unload_tree_$uuid() {
+                               |  let target = document.getElementById("child_$uuid");
+                               |  if (target) target.innerHTML = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
+                               |}
+                               |
+                               |funcs.push({ id: $uuid, fun: load_tree_$uuid });
+                               |folds.push({ id: $uuid, fun: unload_tree_$uuid });
+                               |subs_$parentUuid.push(unload_tree_$uuid);
+                               |""".stripMargin
+
+                          <td class="parser-child" id={s"child_$uuid"} onclick={s"load_tree_$uuid()"}>
+                            <div class="unloaded attempt">
+                              <p>{p.parserName}<br />({p.internalName})</p>
+                            </div>
+                          </td> }
+                      }
                     </tr>
                   </table>
                 } else {
