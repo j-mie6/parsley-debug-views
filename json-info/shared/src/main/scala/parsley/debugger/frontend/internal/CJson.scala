@@ -66,7 +66,7 @@ private[frontend] object CJson {
     JsonObject(
       "name"     -> (if (dt.parserName != dt.internalName) s"${dt.parserName} (${dt.internalName})"
                  else dt.internalName).toJSON,
-      "result"   -> dt.parseResults.toJSON,
+      "attempt"  -> dt.parseResults.toJSON,
       "children" -> Json.arr(dt.nodeChildren.map { case (_, t) => dtToJSON(t) }.toVector*)
     ).asJson
 }

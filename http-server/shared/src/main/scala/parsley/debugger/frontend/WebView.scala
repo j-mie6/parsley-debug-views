@@ -239,22 +239,33 @@ object WebViewUnsafeIO {
 /** A raw HTML formatter for debug trees. If you don't want or need pretty-printing, pass `None` into `spaces`. */
 final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Option[Int], additions: Iterable[Node])
   extends StatelessFrontend {
+  implicit private class Sanitize(s: String) {
+    def sanitizeNewlines: String = s.replace("\r", "").replace("\n", nlSeq)
+
+    def amp: String = s.replace(ampSeq, "&")
+
+    def nl: String = s.replace(nlSeq, "<br />")
+  }
+
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
+    implicit val funcTable: mutable.Buffer[String] = mutable.ListBuffer()
+
     // format: off
     val page =
       <html>
         <head>
           <title>Parsley Web Frontend</title>
           <style type="text/css">
-            {Styles.primaryStylesheet}
+            ---[STYLE]---
           </style>
         </head>
 
         <body>
           <h1>Input</h1>
-          <p class="large">{s"\"${input.replace("\r", "").replace("\n", nlSeq)}\""}</p>
+          <p class="large">{s"\"${input.sanitizeNewlines}\""}</p>
           <hr />
           <h1>Output</h1>
+          <br />
           <p class="large">
             {tree.parseResults.flatMap(_.result) match {
               case Some(ans) => ans.toString
@@ -263,11 +274,34 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
           </p>
           <hr/>
           <h1>Parse Tree</h1>
+          <button id="unfold-btn" onclick="unfold_all()">
+            Unfold All Children [!]
+          </button>
+
           {tree.toHTML}
+
           {additions}
+
+          ---[SCRIPT]---
         </body>
       </html>
     // format: on
+
+    def script(): String = {
+      ("""<script>
+         |var funcs = [];
+         |
+         |function unfold_all() {
+         |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
+         |    document.getElementById("unfold-btn").remove();
+         |    funcs.forEach((f) => f.fun());
+         |  }
+         |}
+         |
+         |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
+        """funcs.sort((a, b) => { return a.id - b.id; });
+          |</script>""".stripMargin).amp
+    }
 
     spaces match {
       case Some(spc) =>
@@ -278,9 +312,23 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
         printer.format(page, sb)
 
         // I have no idea how to get literal ampersands.
-        cont("<!DOCTYPE html>\n" + sb.toString().replace(ampSeq, "&").replace(nlSeq, "<br />"))
+        cont(
+          "<!DOCTYPE html>\n" + sb
+            .toString()
+            .amp
+            .nl
+            .replace("---[STYLE]---", Styles.primaryStylesheet)
+            .replace("---[SCRIPT]---", script())
+        )
       case None      =>
-        cont("<!DOCTYPE html>\n" + page.toString().replace(ampSeq, "&").replace(nlSeq, "<br />"))
+        cont(
+          "<!DOCTYPE html>\n" + page
+            .toString()
+            .amp
+            .nl
+            .replace("---[STYLE]---", Styles.primaryStylesheet)
+            .replace("---[SCRIPT]---", script())
+        )
     }
 
   }
