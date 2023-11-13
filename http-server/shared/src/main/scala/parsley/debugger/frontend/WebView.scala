@@ -127,9 +127,9 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
                 lazy val additions = List(
                     <hr />,
                     <p class="large">
-                      <a href="/download?tree=1">Download this debug output as JSON</a>
+                      <a href={s"/download?tree=$idx"}>Download this debug output as JSON</a>
                       <br />
-                      <a href={s"/download?tree=1${ampSeq}pretty"}>(Prettified JSON)</a>
+                      <a href={s"/download?tree=$idx${ampSeq}pretty"}>(Prettified JSON)</a>
                     </p>,
                     <hr />,
                     <h1>Parse Trees</h1>,
