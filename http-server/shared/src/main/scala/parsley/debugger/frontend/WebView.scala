@@ -48,6 +48,9 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
 ) extends StatelessFrontend {
   // Seen trees. We'll use this to create links to previously-seen trees.
   private val seen: mutable.ListBuffer[(String, DebugTree)] = new mutable.ListBuffer()
+  private val jsonCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
+  private val prettyJsonCache: mutable.HashMap[Int, String] = new mutable.HashMap()
+  private val htmlCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
   private var started: Boolean = false
 
   // Download query matcher
@@ -66,13 +69,37 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
           index match {
             case Validated.Valid(idx) =>
               val ix = idx - 1
-              if (ix < 0) {
-                BadRequest("Zero or negative index given.")
-              } else if (ix >= seen.length) {
-                NotFound("Index out of bounds.")
+
+              var sln: Int = 0
+              var six: Option[(String, DebugTree)] = None
+
+              seen.synchronized {
+                sln = seen.length
+                six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
+              }
+
+              if (six.isEmpty) {
+                NotFound(s"Index ${ix + 1} out of bounds.")
               } else {
                 var result = ""
-                JsonStringFormatter(r => { result = r }, pretty = pretty).process(seen(ix)._1, seen(ix)._2)
+
+                six.foreach { case (inp, tree) =>
+                  val cache = if (pretty) prettyJsonCache else jsonCache
+
+                  cache.synchronized {
+                    cache.get(ix) match {
+                      case Some(json) => result = json
+                      case None       =>
+                        JsonStringFormatter(
+                          r => {
+                            result = r
+                            cache(ix) = r
+                          },
+                          pretty = pretty
+                        ).process(inp, tree)
+                    }
+                  }
+                }
 
                 Ok(result).map(_.putHeaders(`Content-Type`.parse("text/json")))
               }
@@ -82,13 +109,20 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
           index match {
             case Validated.Valid(idx) =>
               val ix = idx - 1
-              if (ix < 0) {
-                BadRequest("Zero or negative index given.")
-              } else if (ix >= seen.length) {
-                NotFound("Index out of bounds.")
+
+              var sln: Int = 0
+              var six: Option[(String, DebugTree)] = None
+
+              seen.synchronized {
+                sln = seen.length
+                six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
+              }
+
+              if (six.isEmpty) {
+                NotFound(s"Index ${ix + 1} out of bounds.")
               } else {
                 // format: off
-                val additions = List(
+                lazy val additions = List(
                     <hr />,
                     <p class="large">
                       <a href="/download?tree=1">Download this debug output as JSON</a>
@@ -105,7 +139,23 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
                 // format: on
 
                 var result = ""
-                HtmlFormatter(r => { result = r }, 0, additions).process(seen(ix)._1, seen(ix)._2)
+
+                six.foreach { case (inp, tree) =>
+                  htmlCache.synchronized {
+                    htmlCache.get(ix) match {
+                      case Some(html) => result = html
+                      case None       =>
+                        HtmlFormatter(
+                          r => {
+                            result = r
+                            htmlCache(ix) = r
+                          },
+                          0,
+                          additions
+                        ).process(inp, tree)
+                    }
+                  }
+                }
 
                 Ok(result).map(_.putHeaders(`Content-Type`.parse("text/html")))
               }
@@ -133,7 +183,9 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
 
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
     // The trees will be listed in index order.
-    seen.append((input, tree))
+    seen.synchronized {
+      seen.append((input, tree))
+    }
 
     // Start the server if it has not.
     if (!started) {
