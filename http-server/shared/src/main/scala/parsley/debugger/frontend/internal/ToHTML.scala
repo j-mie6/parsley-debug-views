@@ -19,6 +19,7 @@ private[frontend] object ToHTML {
   }
 
   val ampSeq: String = "-[-{AMP}-]-"
+  val nlSeq: String  = "-[-{NL}-]-"
 
   // format: off
   implicit lazy val dtToH: ToHTML[DebugTree] = (dt: DebugTree) =>
@@ -35,7 +36,7 @@ private[frontend] object ToHTML {
                   </tr>
 
                   <tr>
-                    <th>Input:</th><td>{s"\"${ri.slice(fo, to + 1)}\""}</td>
+                    <th>Input:</th><td>{s"\"${ri.slice(fo, to + 1).replace("\r", "").replace("\n", nlSeq)}\""}</td>
                   </tr>
 
                   <tr>

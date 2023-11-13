@@ -40,6 +40,8 @@ import parsley.debugger.frontend.internal.Styles
   *
   * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
   * on attaching debuggers to find out how to prevent that.
+  *
+  * '''Warning''': large tree outputs from debugged parsers may crash web browsers' rendering systems.
   */
 sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
   cont: F[Resource[F, Server]] => G,
@@ -150,8 +152,8 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
                             result = r
                             htmlCache(ix) = r
                           },
-                          0,
-                          additions
+                          spaces = None,
+                          additions = additions
                         ).process(inp, tree)
                     }
                   }
@@ -234,14 +236,10 @@ object WebViewUnsafeIO {
   }
 }
 
-/** A raw HTML formatter for debug trees. */
-final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int, additions: Iterable[Node])
+/** A raw HTML formatter for debug trees. If you don't want or need pretty-printing, pass `None` into `spaces`. */
+final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Option[Int], additions: Iterable[Node])
   extends StatelessFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
-    // 640 is a sensible line length. Ideally we want an infinite line length limit.
-    val printer = new PrettyPrinter(640, spaces)
-    val sb      = new StringBuilder()
-
     // format: off
     val page =
       <html>
@@ -254,7 +252,7 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int, 
 
         <body>
           <h1>Input</h1>
-          <p class="large">{s"\"$input\""}</p>
+          <p class="large">{s"\"${input.replace("\r", "").replace("\n", nlSeq)}\""}</p>
           <hr />
           <h1>Output</h1>
           <p class="large">
@@ -271,14 +269,24 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int, 
       </html>
     // format: on
 
-    printer.format(page, sb)
+    spaces match {
+      case Some(spc) =>
+        // 800 is a sensible line length. Ideally we want an infinite line length limit.
+        val printer = new PrettyPrinter(800, spc)
+        val sb      = new StringBuilder()
 
-    // I have no idea how to get literal ampersands.
-    cont("<!DOCTYPE html>\n" + sb.toString().replace(ampSeq, "&"))
+        printer.format(page, sb)
+
+        // I have no idea how to get literal ampersands.
+        cont("<!DOCTYPE html>\n" + sb.toString().replace(ampSeq, "&").replace(nlSeq, "<br />"))
+      case None      =>
+        cont("<!DOCTYPE html>\n" + page.toString().replace(ampSeq, "&").replace(nlSeq, "<br />"))
+    }
+
   }
 }
 
 object HtmlFormatter {
-  def apply(cont: String => Unit, spaces: Int = 2, additions: Iterable[Node] = Nil): HtmlFormatter =
+  def apply(cont: String => Unit, spaces: Option[Int] = Some(2), additions: Iterable[Node] = Nil): HtmlFormatter =
     new HtmlFormatter(cont, spaces, additions)
 }
