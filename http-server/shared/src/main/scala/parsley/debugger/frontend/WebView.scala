@@ -300,7 +300,7 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
          |
          |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
         """funcs.sort((a, b) => { return a.id - b.id; });
-          |</script>""".stripMargin).amp
+          |</script>""".stripMargin).amp.nl
     }
 
     spaces match {

@@ -101,11 +101,15 @@ private[frontend] object Styles {
       |
       |.info {
       |  position: fixed;
-      |  display: none;
+      |  display: flex;
+      |  visibility: hidden;
       |
       |  background-color: #ffffff;
       |  border: 2px solid;
       |  border-color: #212223;
+      |
+      |  opacity: 0;
+      |  transition: visibility 0.25s, opacity 0.25s ease-in-out;
       |
       |  padding: 0.7em;
       |  left: 3em;
@@ -115,7 +119,7 @@ private[frontend] object Styles {
       |  font-size: 18px !important;
       |
       |  max-height: 50vh;
-      |  max-width: 75vh;
+      |  max-width: 75vw;
       |  overflow: scroll;
       |}
       |
@@ -142,9 +146,11 @@ private[frontend] object Styles {
       |  background-color: #ffff00 !important;
       |}
       |
-      |.attempt:hover .info {
+      |.attempt:hover > .info, .info:hover {
       |  position: fixed;
       |  display: flex;
+      |  visibility: visible;
+      |  opacity: 1;
       |}
       |
       |.children:last-child > .attempt:hover .info {
