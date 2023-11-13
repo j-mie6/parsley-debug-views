@@ -11,6 +11,7 @@ import scala.xml.{Node, PrettyPrinter}
 import cats.*
 import cats.data.Validated
 import cats.effect.*
+import cats.effect.unsafe.IORuntime
 import cats.implicits.*
 import com.comcast.ip4s.*
 import fs2.io.net.Network
@@ -22,6 +23,7 @@ import org.http4s.headers.`Content-Type`
 import org.http4s.implicits.*
 import org.http4s.server.Server
 import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.noop.NoOpLogger
 import org.typelevel.log4cats.syntax.*
 import org.typelevel.scalaccompat.annotation.unused
 import parsley.debugger.DebugTree
@@ -35,14 +37,22 @@ import parsley.debugger.frontend.internal.Styles
   * most likely `IO`.
   *
   * `cont` will be called once when the server begins. Pass the server initialiser computation to your `cats` runtime.
+  *
+  * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
+  * on attaching debuggers to find out how to prevent that.
+  *
+  * '''Warning''': large tree outputs from debugged parsers may crash web browsers' rendering systems.
   */
-final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
+sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
   cont: F[Resource[F, Server]] => G,
   host: Hostname,
   port: Port
 ) extends StatelessFrontend {
   // Seen trees. We'll use this to create links to previously-seen trees.
   private val seen: mutable.ListBuffer[(String, DebugTree)] = new mutable.ListBuffer()
+  private val jsonCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
+  private val prettyJsonCache: mutable.HashMap[Int, String] = new mutable.HashMap()
+  private val htmlCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
   private var started: Boolean = false
 
   // Download query matcher
@@ -61,13 +71,37 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
           index match {
             case Validated.Valid(idx) =>
               val ix = idx - 1
-              if (ix < 0) {
-                BadRequest("Zero or negative index given.")
-              } else if (ix >= seen.length) {
-                NotFound("Index out of bounds.")
+
+              var sln: Int = 0
+              var six: Option[(String, DebugTree)] = None
+
+              seen.synchronized {
+                sln = seen.length
+                six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
+              }
+
+              if (six.isEmpty) {
+                NotFound(s"Index ${ix + 1} out of bounds.")
               } else {
                 var result = ""
-                JsonStringFormatter(r => { result = r }, pretty = pretty).process(seen(ix)._1, seen(ix)._2)
+
+                six.foreach { case (inp, tree) =>
+                  val cache = if (pretty) prettyJsonCache else jsonCache
+
+                  cache.synchronized {
+                    cache.get(ix) match {
+                      case Some(json) => result = json
+                      case None       =>
+                        JsonStringFormatter(
+                          r => {
+                            result = r
+                            cache(ix) = r
+                          },
+                          pretty = pretty
+                        ).process(inp, tree)
+                    }
+                  }
+                }
 
                 Ok(result).map(_.putHeaders(`Content-Type`.parse("text/json")))
               }
@@ -77,18 +111,25 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
           index match {
             case Validated.Valid(idx) =>
               val ix = idx - 1
-              if (ix < 0) {
-                BadRequest("Zero or negative index given.")
-              } else if (ix >= seen.length) {
-                NotFound("Index out of bounds.")
+
+              var sln: Int = 0
+              var six: Option[(String, DebugTree)] = None
+
+              seen.synchronized {
+                sln = seen.length
+                six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
+              }
+
+              if (six.isEmpty) {
+                NotFound(s"Index ${ix + 1} out of bounds.")
               } else {
                 // format: off
-                val additions = List(
+                lazy val additions = List(
                     <hr />,
                     <p class="large">
-                      <a href="/download?tree=1">Download this debug output as JSON</a>
+                      <a href={s"/download?tree=$idx"}>Download this debug output as JSON</a>
                       <br />
-                      <a href={s"/download?tree=1${ampSeq}pretty"}>(Prettified JSON)</a>
+                      <a href={s"/download?tree=$idx${ampSeq}pretty"}>(Prettified JSON)</a>
                     </p>,
                     <hr />,
                     <h1>Parse Trees</h1>,
@@ -100,7 +141,23 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
                 // format: on
 
                 var result = ""
-                HtmlFormatter(r => { result = r }, 0, additions).process(seen(ix)._1, seen(ix)._2)
+
+                six.foreach { case (inp, tree) =>
+                  htmlCache.synchronized {
+                    htmlCache.get(ix) match {
+                      case Some(html) => result = html
+                      case None       =>
+                        HtmlFormatter(
+                          r => {
+                            result = r
+                            htmlCache(ix) = r
+                          },
+                          spaces = None,
+                          additions = additions
+                        ).process(inp, tree)
+                    }
+                  }
+                }
 
                 Ok(result).map(_.putHeaders(`Content-Type`.parse("text/html")))
               }
@@ -128,7 +185,9 @@ final class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
 
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
     // The trees will be listed in index order.
-    seen.append((input, tree))
+    seen.synchronized {
+      seen.append((input, tree))
+    }
 
     // Start the server if it has not.
     if (!started) {
@@ -147,41 +206,135 @@ object WebView {
     new WebView(cont, host, port) // "pure", yeah right.
 }
 
-/** A raw HTML formatter for debug trees. */
-final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Int, additions: Iterable[Node])
-  extends StatelessFrontend {
-  override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
-    // 640 is a sensible line length. Ideally we want an infinite line length limit.
-    val printer = new PrettyPrinter(640, spaces)
-    val sb      = new StringBuilder()
+/** A version of [[WebView]] for those who don't care about `cats` and just want something that works. The only problem
+  * is that this may not work on all platforms.
+  *
+  * @note
+  *   Depending on platform, you may want to keep the application from terminating should you want to keep the server
+  *   running after your parsers have run.
+  */
+object WebViewUnsafeIO {
+  implicit val defaultIoRuntime: IORuntime = IORuntime.global
 
+  def make(
+    host: Hostname = host"localhost",
+    port: Port = port"8080",
+    logger: Logger[IO] = NoOpLogger[IO]
+  ): WebView[IO, Unit] = {
+    implicit val log: Logger[IO] = logger
+
+    new WebView[IO, Unit](
+      serverStart => {
+        (for {
+          serv <- serverStart
+          res  <- serv.useForever.as(())
+        } yield res).unsafeRunAsync(_ => ())
+      },
+      host,
+      port
+    )
+  }
+}
+
+/** A raw HTML formatter for debug trees. If you don't want or need pretty-printing, pass `None` into `spaces`. */
+final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Option[Int], additions: Iterable[Node])
+  extends StatelessFrontend {
+  implicit private class Sanitize(s: String) {
+    def sanitizeNewlines: String = s.replace("\r", "").replace("\n", nlSeq)
+
+    def amp: String = s.replace(ampSeq, "&")
+
+    def nl: String = s.replace(nlSeq, "<br />")
+  }
+
+  override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
+    implicit val funcTable: mutable.Buffer[String] = mutable.ListBuffer()
+
+    // format: off
     val page =
       <html>
         <head>
           <title>Parsley Web Frontend</title>
           <style type="text/css">
-            {Styles.primaryStylesheet}
+            ---[STYLE]---
           </style>
         </head>
 
         <body>
           <h1>Input</h1>
-          <p class="large">{s"\"$input\""}</p>
+          <p class="large">{s"\"${input.sanitizeNewlines}\""}</p>
           <hr />
+          <h1>Output</h1>
+          <br />
+          <p class="large">
+            {tree.parseResults.flatMap(_.result) match {
+              case Some(ans) => ans.toString
+              case None      => "[N/A]"
+            }}
+          </p>
+          <hr/>
           <h1>Parse Tree</h1>
+          <button id="unfold-btn" onclick="unfold_all()">
+            Unfold All Children [!]
+          </button>
+
           {tree.toHTML}
+
           {additions}
+
+          ---[SCRIPT]---
         </body>
       </html>
+    // format: on
 
-    printer.format(page, sb)
+    def script(): String = {
+      ("""<script>
+         |var funcs = [];
+         |
+         |function unfold_all() {
+         |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
+         |    document.getElementById("unfold-btn").remove();
+         |    funcs.forEach((f) => f.fun());
+         |  }
+         |}
+         |
+         |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
+        """funcs.sort((a, b) => { return a.id - b.id; });
+          |</script>""".stripMargin).amp
+    }
 
-    // I have no idea how to get literal ampersands.
-    cont("<!DOCTYPE html>\n" + sb.toString().replace(ampSeq, "&"))
+    spaces match {
+      case Some(spc) =>
+        // 800 is a sensible line length. Ideally we want an infinite line length limit.
+        val printer = new PrettyPrinter(800, spc)
+        val sb      = new StringBuilder()
+
+        printer.format(page, sb)
+
+        // I have no idea how to get literal ampersands.
+        cont(
+          "<!DOCTYPE html>\n" + sb
+            .toString()
+            .amp
+            .nl
+            .replace("---[STYLE]---", Styles.primaryStylesheet)
+            .replace("---[SCRIPT]---", script())
+        )
+      case None      =>
+        cont(
+          "<!DOCTYPE html>\n" + page
+            .toString()
+            .amp
+            .nl
+            .replace("---[STYLE]---", Styles.primaryStylesheet)
+            .replace("---[SCRIPT]---", script())
+        )
+    }
+
   }
 }
 
 object HtmlFormatter {
-  def apply(cont: String => Unit, spaces: Int = 2, additions: Iterable[Node] = Nil): HtmlFormatter =
+  def apply(cont: String => Unit, spaces: Option[Int] = Some(2), additions: Iterable[Node] = Nil): HtmlFormatter =
     new HtmlFormatter(cont, spaces, additions)
 }

@@ -10,9 +10,8 @@ import parsley.debugger.frontend.internal.consolepretty.*
 
 /** A console pretty-printer for the debugger.
   *
-  * Will automatically print the debug tree into stdout after a parser has finished running.
-  *
-  * Technically not a GUI.
+  * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
+  * on attaching debuggers to find out how to prevent that.
   */
 final class ConsolePrettyPrinter private[frontend] (ioF: String => Unit) extends StatelessFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {

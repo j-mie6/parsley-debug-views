@@ -30,6 +30,18 @@ private[frontend] object Styles {
       |  font-size: 48px;
       |}
       |
+      |a {
+      |  font-weight: normal !important;
+      |}
+      |
+      |#unfold-btn {
+      |  font-family: monospace;
+      |  font-weight: bold;
+      |  font-size: 14px;
+      |  text-align: center;
+      |  margin-bottom: 2em;
+      |}
+      |
       |.large {
       |  font-size: 24px;
       |}
@@ -39,6 +51,8 @@ private[frontend] object Styles {
       |  flex-direction: row;
       |  gap: 1em;
       |  align-content: flex-start;
+      |  max-width: 40em;
+      |  flex-wrap: wrap;
       |}
       |
       |.parser {
@@ -67,6 +81,15 @@ private[frontend] object Styles {
       |  font-size: 14px;
       |
       |  z-index: 99 !important;
+      |}
+      |
+      |.unloaded {
+      |  min-width: 4em !important;
+      |  min-height: 2em !important;
+      |  background-color: #878787 !important;
+      |  line-height: 1.75 !important;
+      |  text-align: center !important;
+      |  font-weight: bold !important;
       |}
       |
       |.dotted {

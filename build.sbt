@@ -35,8 +35,8 @@ lazy val commonSettings = Seq(
   headerEmptyLine      := false,
   resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
-    "com.github.j-mie6" %%% "parsley"       % "4.4-a0b4baa-SNAPSHOT",
-    "com.github.j-mie6" %%% "parsley-debug" % "4.4-a0b4baa-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley"       % "4.4-d2601fc-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley-debug" % "4.4-d2601fc-SNAPSHOT",
     "org.scalactic"     %%% "scalactic"     % "3.2.17" % Test,
     "org.scalatest"     %%% "scalatest"     % "3.2.17" % Test
   )

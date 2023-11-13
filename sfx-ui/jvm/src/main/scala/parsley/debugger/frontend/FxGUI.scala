@@ -33,6 +33,9 @@ import scalafx.stage.Stage
   * node info display shows more information about a parse attempt (its offsets, result, etc.) and the input display
   * shows where in the input the parse attempt was made, highlighted in bold, green, and underlined text within the rest
   * of the input.
+  *
+  * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
+  * on attaching debuggers to find out how to prevent that.
   */
 final class FxGUI private[frontend] (fontMult: Double) extends StatelessFrontend {
   implicit private val gfMult: Double = fontMult

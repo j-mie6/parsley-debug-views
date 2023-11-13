@@ -48,7 +48,7 @@ private[frontend] object CJson {
 
   implicit val paToJSON: CJson[ParseAttempt] = { case ParseAttempt(ri, fo, to, fp, tp, sc, res) =>
     JsonObject(
-      "input"    -> (if (fo == to) Json.Null else ri.slice(fo, to + 1).toJSON),
+      "input"    -> (if (fo == to) Json.Null else ri.toJSON),
       "position" -> JsonObject(
         "from" -> fp.toJSON,
         "to"   -> tp.toJSON
@@ -66,7 +66,7 @@ private[frontend] object CJson {
     JsonObject(
       "name"     -> (if (dt.parserName != dt.internalName) s"${dt.parserName} (${dt.internalName})"
                  else dt.internalName).toJSON,
-      "result"   -> dt.parseResults.toJSON,
-      "children" -> Json.arr(dt.nodeChildren.map { case (_, t) => dtToJSON(t) }.toVector *)
+      "attempt"  -> dt.parseResults.toJSON,
+      "children" -> Json.arr(dt.nodeChildren.map { case (_, t) => dtToJSON(t) }.toVector*)
     ).asJson
 }
