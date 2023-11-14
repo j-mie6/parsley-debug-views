@@ -41,8 +41,14 @@ object consolepretty {
       prettyPrint(PrettyPrintHelper(new StringBuilder, Vector.empty)).acc.dropRight(1).toString()
 
     private def prettyPrint(helper: PrettyPrintHelper): PrettyPrintHelper = {
+      val uname   =
+        if (dt.parserName != dt.internalName)
+          s"${dt.parserName} (${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""})"
+        else
+          s"${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""}"
       val results = dt.parseResults.map(printParseAttempt).mkString
-      helper.bury(s"[ ${dt.parserName} ]: $results")
+
+      helper.bury(s"[ $uname ]: $results")
       printChildren(helper, dt.nodeChildren.toList)
       helper
     }

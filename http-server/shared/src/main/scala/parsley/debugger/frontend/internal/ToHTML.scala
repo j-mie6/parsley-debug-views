@@ -32,6 +32,7 @@ private[frontend] object ToHTML {
   implicit lazy val dtToH: ToHTML[DebugTree] = new ToHTML[DebugTree] {
     override def apply[V1 <: DebugTree](dt: V1)(implicit funcTable: mutable.Buffer[String]): Node = {
       val parentUuid = nextUid()
+      val uname      = s"${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""}"
 
       dt.parseResults.get match {
         case ParseAttempt(ri, _, _, fp, tp, sc, res) =>
@@ -42,7 +43,7 @@ private[frontend] object ToHTML {
                 <div class="info">
                   <table>
                     <tr>
-                      <th>{s"${dt.parserName} (${dt.internalName})"}</th><td>{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}</td>
+                      <th>{uname}</th><td>{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}</td>
                     </tr>
 
                     <tr>
@@ -60,7 +61,7 @@ private[frontend] object ToHTML {
                 </div>
 
                 <p class="overview">
-                  {dt.internalName}<br />{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}
+                  {uname}<br />{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}
                 </p>
               </td>
             </tr>
