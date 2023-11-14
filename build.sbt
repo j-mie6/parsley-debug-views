@@ -35,8 +35,8 @@ lazy val commonSettings = Seq(
   headerEmptyLine      := false,
   resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
-    "com.github.j-mie6" %%% "parsley"       % "4.4-d2601fc-20231114T113323Z-SNAPSHOT",
-    "com.github.j-mie6" %%% "parsley-debug" % "4.4-d2601fc-20231114T113323Z-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley"       % "4.4-187a045-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley-debug" % "4.4-187a045-SNAPSHOT",
     "org.scalactic"     %%% "scalactic"     % "3.2.17" % Test,
     "org.scalatest"     %%% "scalatest"     % "3.2.17" % Test
   )
@@ -103,7 +103,9 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.http4s"             %%% "http4s-circe"        % http4sVersion,
       "org.typelevel"          %%% "log4cats-core"       % log4catsVersion,
       "org.typelevel"          %%% "log4cats-noop"       % log4catsVersion,
-      "org.scala-lang.modules" %%% "scala-xml"           % "2.2.0"
+      "org.scala-lang.modules" %%% "scala-xml"           % "2.2.0",
+      // TODO: find a replacement for this minifier. N.B. This is licensed under the Apache License 2.0.
+      "dev.i10416"             %%% "cssminifier"         % "0.0.2"
     )
   )
   .jvmSettings(
