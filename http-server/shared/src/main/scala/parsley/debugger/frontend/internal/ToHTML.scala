@@ -72,55 +72,16 @@ private[frontend] object ToHTML {
                   <table class="children">
                     <tr>
                       {
-                        funcTable +=
-                          s"""var subs_$parentUuid = [];
-                             |
-                             |function unload_children_$parentUuid(e) {
-                             |  subs_$parentUuid.forEach((f) => f());
-                             |
-                             |  var event = e ? e : window.event;
-                             |  event.cancelBubble = true;
-                             |  if (event.stopPropagation) event.stopPropagation();
-                             |}
-                             |""".stripMargin
-
                         dt.nodeChildren.iterator.map { case (_, p) =>
                           val uuid = nextUid()
 
                           funcTable +=
-                            s"""function load_tree_$uuid(e) {
-                               |  let target = document.getElementById("child_$uuid");
-                               |
-                               |  if (target && target.firstElementChild && target.firstElementChild.className.indexOf("unloaded") !== 1) {
-                               |    target.innerHTML = `${dtToH.apply[DebugTree](p)}`;
-                               |
-                               |    if (target.hasAttribute("onclick")) {
-                               |      target.removeAttribute("onclick");
-                               |      target.addEventListener("click", load_tree_$uuid, false);
-                               |    }
-                               |
-                               |    let parent = document.getElementById("parent_$parentUuid");
-                               |    if (parent) parent.addEventListener("click", unload_children_$parentUuid, false);
-                               |  } else if (target) {
-                               |    target.innerHTML = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
-                               |  }
-                               |
-                               |  var event = e ? e : window.event;
-                               |  event.cancelBubble = true;
-                               |  if (event.stopPropagation) event.stopPropagation();
-                               |}
-                               |
-                               |function unload_tree_$uuid() {
-                               |  let target = document.getElementById("child_$uuid");
-                               |  if (target) target.innerHTML = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
-                               |}
-                               |
-                               |funcs.push({ id: $uuid, fun: load_tree_$uuid });
-                               |folds.push({ id: $uuid, fun: unload_tree_$uuid });
-                               |subs_$parentUuid.push(unload_tree_$uuid);
+                            s"""opens[$uuid] = [`${dtToH.apply[DebugTree](p)}`, $parentUuid];
+                               |folds[$uuid] = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
+                               |add_sub($parentUuid, () => unload_child($uuid));
                                |""".stripMargin
 
-                          <td class="parser-child" id={s"child_$uuid"} onclick={s"load_tree_$uuid()"}>
+                          <td class="parser-child" id={s"child_$uuid"} onclick={s"load_child($uuid)(undefined)"}>
                             <div class="unloaded attempt">
                               <p>{p.parserName}<br />({p.internalName})</p>
                             </div>

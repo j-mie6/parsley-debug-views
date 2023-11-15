@@ -256,7 +256,7 @@ object WebViewUnsafeIO {
 /** A raw HTML formatter for debug trees. If you don't want or need pretty-printing, pass `None` into `spaces`. Separate
   * continuation parameters are provided for the HTML and the JS.
   */
-final class HtmlFormatter private[frontend] (
+final private[parsley] class HtmlFormatter private[frontend] (
   contHTML: String => Unit,
   contJS: String => Unit,
   spaces: Option[Int],
@@ -318,24 +318,69 @@ final class HtmlFormatter private[frontend] (
     // format: on
 
     def script(): String = {
-      ("""var funcs = [];
-         |var folds = [];
-         |
-         |function unfold_all() {
-         |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
-         |    funcs.forEach((f) => f.fun());
-         |  }
-         |}
-         |
-         |function fold_all() {
-         |  if (confirm("Are you sure you want to fold all the trees? You will lose your unfolding progress!")) {
-         |    folds.forEach((f) => f.fun());
-         |  }
-         |}
-         |
-         |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
-        """funcs.sort((a, b) => { return a.id - b.id; });
-          |folds.sort((a, b) => { return a.id - b.id; });
+      ("""var opens = {};
+        |var folds = {};
+        |var fk = -1;
+        |var subs = {};
+        |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
+        """fk = Object.keys(subs).sort()[0];
+          |
+          |function unfold_all() {
+          |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
+          |    Object.keys(opens).forEach((k) => load_child(k)(undefined));
+          |  }
+          |}
+          |
+          |function fold_all() {
+          |  if (confirm("Are you sure you want to fold all the trees? You will lose your unfolding progress!")) {
+          |    unload_children(fk)(undefined);
+          |  }
+          |}
+          |
+          |function add_sub(id, fun) {
+          |  if (!subs[id]) subs[id] = [];
+          |  subs[id].push(fun);
+          |}
+          |
+          |function unload_children(uuid) {
+          |  var evh = (e) => {
+          |    subs[uuid].forEach((f) => f());
+          |  };
+          |
+          |  return evh;
+          |}
+          |
+          |function load_child(uuid) {
+          |  var evh = (e) => {
+          |    let target = document.getElementById("child_" + uuid);
+          |
+          |    if (target && target.firstElementChild && target.firstElementChild.className.indexOf("unloaded") !== 1) {
+          |      target.innerHTML = opens[uuid][0];
+          |
+          |      if (target.hasAttribute("onclick")) {
+          |        target.removeAttribute("onclick");
+          |        target.addEventListener("click", load_child(uuid), false);
+          |      }
+          |
+          |      let parent = document.getElementById("parent_" + opens[uuid][1]);
+          |      if (parent) parent.addEventListener("click", unload_children(opens[uuid][1]), false);
+          |    } else if (target) {
+          |      target.innerHTML = folds[uuid];
+          |    }
+          |
+          |    var event = e ? e : window.event;
+          |    event.cancelBubble = true;
+          |    if (event.stopPropagation) event.stopPropagation();
+          |    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+          |  };
+          |
+          |  return evh;
+          |}
+          |
+          |function unload_child(uuid) {
+          |  let target = document.getElementById("child_" + uuid);
+          |  if (target) target.innerHTML = folds[uuid];
+          |}
           |""".stripMargin).amp.nl
     }
 
@@ -369,7 +414,7 @@ final class HtmlFormatter private[frontend] (
   }
 }
 
-object HtmlFormatter {
+private[parsley] object HtmlFormatter {
   def apply(
     contHTML: String => Unit,
     contJS: String => Unit,

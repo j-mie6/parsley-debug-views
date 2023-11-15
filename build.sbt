@@ -42,7 +42,7 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server)
+lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server, js_minifier)
 
 lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -90,7 +90,7 @@ val log4catsVersion = "2.6.0"
 lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
-  .dependsOn(json_info) // We want the CJson type class here too.
+  .dependsOn(json_info, js_minifier) // We want the CJson type class here too.
   .in(file("http-server"))
   .settings(
     commonSettings,
@@ -111,5 +111,12 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .jvmSettings(
     libraryDependencies += "org.typelevel" %%% "log4cats-slf4j" % log4catsVersion
   )
+
+// Hand-rolled JS minifier, powered by what else but Parsley.
+lazy val js_minifier = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("js-minifier"))
+  .settings(commonSettings)
 
 Test / parallelExecution := false
