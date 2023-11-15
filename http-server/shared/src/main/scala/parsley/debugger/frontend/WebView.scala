@@ -318,16 +318,16 @@ final private[parsley] class HtmlFormatter private[frontend] (
     // format: on
 
     def script(): String = {
-      ("""var opens = {};
-        |var folds = {};
+      ("""var os = {};
+        |var fs = {};
         |var fk = -1;
-        |var subs = {};
+        |var ss = {};
         |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
-        """fk = Object.keys(subs).sort()[0];
+        """fk = Object.keys(ss).sort()[0];
           |
           |function unfold_all() {
           |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
-          |    Object.keys(opens).forEach((k) => load_child(k)(undefined));
+          |    Object.keys(os).forEach((k) => load_child(k)(undefined));
           |  }
           |}
           |
@@ -337,35 +337,35 @@ final private[parsley] class HtmlFormatter private[frontend] (
           |  }
           |}
           |
-          |function add_sub(id, fun) {
-          |  if (!subs[id]) subs[id] = [];
-          |  subs[id].push(fun);
+          |function asb(id, fun) {
+          |  if (!ss[id]) ss[id] = [];
+          |  ss[id].push(fun);
           |}
           |
           |function unload_children(uuid) {
           |  var evh = (e) => {
-          |    subs[uuid].forEach((f) => f());
+          |    ss[uuid].forEach((f) => f());
           |  };
           |
           |  return evh;
           |}
           |
-          |function load_child(uuid) {
+          |function lc(uuid) {
           |  var evh = (e) => {
           |    let target = document.getElementById("child_" + uuid);
           |
           |    if (target && target.firstElementChild && target.firstElementChild.className.indexOf("unloaded") !== 1) {
-          |      target.innerHTML = opens[uuid][0];
+          |      target.innerHTML = os[uuid][0];
           |
           |      if (target.hasAttribute("onclick")) {
           |        target.removeAttribute("onclick");
-          |        target.addEventListener("click", load_child(uuid), false);
+          |        target.addEventListener("click", lc(uuid), false);
           |      }
           |
-          |      let parent = document.getElementById("parent_" + opens[uuid][1]);
-          |      if (parent) parent.addEventListener("click", unload_children(opens[uuid][1]), false);
+          |      let parent = document.getElementById("parent_" + os[uuid][1]);
+          |      if (parent) parent.addEventListener("click", unload_children(os[uuid][1]), false);
           |    } else if (target) {
-          |      target.innerHTML = folds[uuid];
+          |      target.innerHTML = fs[uuid];
           |    }
           |
           |    var event = e ? e : window.event;
@@ -377,11 +377,14 @@ final private[parsley] class HtmlFormatter private[frontend] (
           |  return evh;
           |}
           |
-          |function unload_child(uuid) {
+          |function unc(uuid) {
           |  let target = document.getElementById("child_" + uuid);
-          |  if (target) target.innerHTML = folds[uuid];
+          |  if (target) target.innerHTML = fs[uuid];
           |}
           |""".stripMargin).amp.nl
+        .replaceAll("\\n\\s+(\\S)", "$1")
+        .replace(";\n", ";")
+        .replace(" = ", "=")
     }
 
     spaces match {

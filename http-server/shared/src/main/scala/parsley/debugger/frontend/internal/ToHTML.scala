@@ -76,12 +76,12 @@ private[frontend] object ToHTML {
                           val uuid = nextUid()
 
                           funcTable +=
-                            s"""opens[$uuid] = [`${dtToH.apply[DebugTree](p)}`, $parentUuid];
-                               |folds[$uuid] = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
-                               |add_sub($parentUuid, () => unload_child($uuid));
+                            s"""os[$uuid] = [`${dtToH.apply[DebugTree](p)}`, $parentUuid];
+                               |fs[$uuid] = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
+                               |asb($parentUuid, () => unc($uuid));
                                |""".stripMargin
 
-                          <td class="parser-child" id={s"child_$uuid"} onclick={s"load_child($uuid)(undefined)"}>
+                          <td class="parser-child" id={s"child_$uuid"} onclick={s"lc($uuid)(undefined)"}>
                             <div class="unloaded attempt">
                               <p>{p.parserName}<br />({p.internalName})</p>
                             </div>
