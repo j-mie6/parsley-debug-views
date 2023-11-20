@@ -35,14 +35,14 @@ lazy val commonSettings = Seq(
   headerEmptyLine      := false,
   resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
-    "com.github.j-mie6" %%% "parsley"       % "4.4-187a045-SNAPSHOT",
-    "com.github.j-mie6" %%% "parsley-debug" % "4.4-187a045-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley"       % "4.4-8bdfc25-SNAPSHOT",
+    "com.github.j-mie6" %%% "parsley-debug" % "4.4-8bdfc25-SNAPSHOT",
     "org.scalactic"     %%% "scalactic"     % "3.2.17" % Test,
     "org.scalatest"     %%% "scalatest"     % "3.2.17" % Test
   )
 )
 
-lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server, js_minifier)
+lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server)
 
 lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
@@ -80,7 +80,7 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   .settings(
     commonSettings,
     name                := "parsley-debug-sfx",
-    libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30"
+    libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30" // Later versions unsupported by Java 8.
   )
 
 // Here's hoping the stable version of Http4S works fine!
@@ -90,7 +90,7 @@ val log4catsVersion = "2.6.0"
 lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
-  .dependsOn(json_info, js_minifier) // We want the CJson type class here too.
+  .dependsOn(json_info) // We want the CJson type class here too.
   .in(file("http-server"))
   .settings(
     commonSettings,
@@ -111,12 +111,5 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .jvmSettings(
     libraryDependencies += "org.typelevel" %%% "log4cats-slf4j" % log4catsVersion
   )
-
-// Hand-rolled JS minifier, powered by what else but Parsley.
-lazy val js_minifier = crossProject(JVMPlatform, JSPlatform, NativePlatform)
-  .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("js-minifier"))
-  .settings(commonSettings)
 
 Test / parallelExecution := false

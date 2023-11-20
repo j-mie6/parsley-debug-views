@@ -50,7 +50,7 @@ sealed class WebView[F[_]: Logger: Async: Network: Compression, G] private[front
   cont: F[Resource[F, Server]] => G,
   host: Hostname,
   port: Port
-) extends StatelessFrontend {
+) extends ReusableFrontend {
   // Seen trees. We'll use this to create links to previously-seen trees.
   private val seen: mutable.ListBuffer[(String, DebugTree)] = new mutable.ListBuffer()
   private val jsonCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
@@ -262,7 +262,7 @@ final private[parsley] class HtmlFormatter private[frontend] (
   spaces: Option[Int],
   treeNum: Int,
   additions: Iterable[Node]
-) extends StatelessFrontend {
+) extends ReusableFrontend {
   implicit private class Sanitize(s: String) {
     def sanitizeNewlines: String = s.replace("\r", "").replace("\n", nlSeq)
 

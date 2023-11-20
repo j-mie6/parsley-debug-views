@@ -13,7 +13,7 @@ import parsley.debugger.frontend.internal.consolepretty.*
   * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
   * on attaching debuggers to find out how to prevent that.
   */
-final class ConsolePrettyPrinter private[frontend] (ioF: String => Unit) extends StatelessFrontend {
+final class ConsolePrettyPrinter private[frontend] (ioF: String => Unit) extends ReusableFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
     ioF(s"${tree.parserName}'s parse tree for input:\n\n$input\n\n")
     ioF(tree.pretty + "\n")
