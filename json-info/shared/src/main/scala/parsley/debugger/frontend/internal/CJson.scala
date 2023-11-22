@@ -64,8 +64,12 @@ private[frontend] object CJson {
   // DebugTree.fullInput comes later.
   implicit lazy val dtToJSON: CJson[DebugTree] = (dt: DebugTree) =>
     JsonObject(
-      "name"     -> (if (dt.parserName != dt.internalName) s"${dt.parserName} (${dt.internalName})"
-                 else dt.internalName).toJSON,
+      "name"     -> (
+        if (dt.parserName != dt.internalName)
+          s"${dt.parserName} (${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""})"
+        else
+          s"${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""}"
+      ).toJSON,
       "attempt"  -> dt.parseResults.toJSON,
       "children" -> Json.arr(dt.nodeChildren.map { case (_, t) => dtToJSON(t) }.toVector*)
     ).asJson

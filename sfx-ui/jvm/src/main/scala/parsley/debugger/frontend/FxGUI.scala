@@ -37,7 +37,7 @@ import scalafx.stage.Stage
   * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
   * on attaching debuggers to find out how to prevent that.
   */
-final class FxGUI private[frontend] (fontMult: Double) extends StatelessFrontend {
+final class FxGUI private[frontend] (fontMult: Double) extends ReusableFrontend {
   implicit private val gfMult: Double = fontMult
 
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {

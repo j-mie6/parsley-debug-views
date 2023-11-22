@@ -14,6 +14,8 @@ import cats.effect.*
 import cats.effect.unsafe.IORuntime
 import cats.implicits.*
 import com.comcast.ip4s.*
+import fs2.compression.Compression
+import fs2.io.compression._
 import fs2.io.net.Network
 import org.http4s.*
 import org.http4s.dsl.*
@@ -22,6 +24,7 @@ import org.http4s.ember.server.*
 import org.http4s.headers.`Content-Type`
 import org.http4s.implicits.*
 import org.http4s.server.Server
+import org.http4s.server.middleware.GZip
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.noop.NoOpLogger
 import org.typelevel.log4cats.syntax.*
@@ -43,22 +46,24 @@ import parsley.debugger.frontend.internal.Styles
   *
   * '''Warning''': large tree outputs from debugged parsers may crash web browsers' rendering systems.
   */
-sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
+sealed class WebView[F[_]: Logger: Async: Network: Compression, G] private[frontend] (
   cont: F[Resource[F, Server]] => G,
   host: Hostname,
   port: Port
-) extends StatelessFrontend {
+) extends ReusableFrontend {
   // Seen trees. We'll use this to create links to previously-seen trees.
   private val seen: mutable.ListBuffer[(String, DebugTree)] = new mutable.ListBuffer()
   private val jsonCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
   private val prettyJsonCache: mutable.HashMap[Int, String] = new mutable.HashMap()
   private val htmlCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
+  private val jsCache: mutable.HashMap[Int, String]         = new mutable.HashMap()
   private var started: Boolean = false
 
   // Download query matcher
   private object TreeMatcher extends ValidatingQueryParamDecoderMatcher[Int]("tree")
 
   private object PrettyMatcher extends FlagQueryParamMatcher("pretty")
+  private object JsMatcher extends FlagQueryParamMatcher("js")
 
   // And here is where we will setup and create the server
   def start(): F[Resource[F, Server]] = {
@@ -66,105 +71,117 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
       val dsl = Http4sDsl[F]
       import dsl.*
 
-      HttpRoutes.of[F] {
-        case GET -> Root / "download" :? TreeMatcher(index) +& PrettyMatcher(pretty) =>
-          index match {
-            case Validated.Valid(idx) =>
-              val ix = idx - 1
+      GZip(
+        HttpRoutes.of[F] {
+          case GET -> Root / "download" :? TreeMatcher(index) +& PrettyMatcher(pretty) =>
+            index match {
+              case Validated.Valid(idx) =>
+                val ix = idx - 1
 
-              var sln: Int = 0
-              var six: Option[(String, DebugTree)] = None
+                var sln: Int = 0
+                var six: Option[(String, DebugTree)] = None
 
-              seen.synchronized {
-                sln = seen.length
-                six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
-              }
-
-              if (six.isEmpty) {
-                NotFound(s"Index ${ix + 1} out of bounds.")
-              } else {
-                var result = ""
-
-                six.foreach { case (inp, tree) =>
-                  val cache = if (pretty) prettyJsonCache else jsonCache
-
-                  cache.synchronized {
-                    cache.get(ix) match {
-                      case Some(json) => result = json
-                      case None       =>
-                        JsonStringFormatter(
-                          r => {
-                            result = r
-                            cache(ix) = r
-                          },
-                          pretty = pretty
-                        ).process(inp, tree)
-                    }
-                  }
+                seen.synchronized {
+                  sln = seen.length
+                  six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
                 }
 
-                Ok(result).map(_.putHeaders(`Content-Type`.parse("text/json")))
-              }
-            case Validated.Invalid(e) => BadRequest(s"Invalid parse for index: $e")
-          }
-        case GET -> Root / "view" :? TreeMatcher(index)                              =>
-          index match {
-            case Validated.Valid(idx) =>
-              val ix = idx - 1
+                if (six.isEmpty) {
+                  NotFound(s"Index ${ix + 1} out of bounds.")
+                } else {
+                  var result = ""
 
-              var sln: Int = 0
-              var six: Option[(String, DebugTree)] = None
+                  six.foreach { case (inp, tree) =>
+                    val cache = if (pretty) prettyJsonCache else jsonCache
 
-              seen.synchronized {
-                sln = seen.length
-                six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
-              }
-
-              if (six.isEmpty) {
-                NotFound(s"Index ${ix + 1} out of bounds.")
-              } else {
-                // format: off
-                lazy val additions = List(
-                    <hr />,
-                    <p class="large">
-                      <a href={s"/download?tree=$idx"}>Download this debug output as JSON</a>
-                      <br />
-                      <a href={s"/download?tree=$idx${ampSeq}pretty"}>(Prettified JSON)</a>
-                    </p>,
-                    <hr />,
-                    <h1>Parse Trees</h1>,
-                    <div class="toc large">
-                      {seen.indices.map { ix =>
-                      <a href={"/view?tree=" + (ix + 1).toString}>{ix + 1}</a>
-                      }}
-                    </div>)
-                // format: on
-
-                var result = ""
-
-                six.foreach { case (inp, tree) =>
-                  htmlCache.synchronized {
-                    htmlCache.get(ix) match {
-                      case Some(html) => result = html
-                      case None       =>
-                        HtmlFormatter(
-                          r => {
-                            result = r
-                            htmlCache(ix) = r
-                          },
-                          spaces = None,
-                          additions = additions
-                        ).process(inp, tree)
+                    cache.synchronized {
+                      cache.get(ix) match {
+                        case Some(json) => result = json
+                        case None       =>
+                          JsonStringFormatter(
+                            r => {
+                              result = r
+                              cache(ix) = r
+                            },
+                            pretty = pretty
+                          ).process(inp, tree)
+                      }
                     }
                   }
+
+                  Ok(result).map(_.putHeaders(`Content-Type`.parse("text/json")))
+                }
+              case Validated.Invalid(e) => BadRequest(s"Invalid parse for index: $e")
+            }
+          case GET -> Root / "view" :? TreeMatcher(index) +& JsMatcher(js)             =>
+            index match {
+              case Validated.Valid(idx) =>
+                val ix = idx - 1
+
+                var sln: Int = 0
+                var six: Option[(String, DebugTree)] = None
+
+                seen.synchronized {
+                  sln = seen.length
+                  six = if (ix >= 0 && ix < sln) Some(seen(ix)) else None
                 }
 
-                Ok(result).map(_.putHeaders(`Content-Type`.parse("text/html")))
-              }
-            case Validated.Invalid(e) => BadRequest(s"Invalid parse for index: $e")
-          }
-        case _ => NotFound("Debug tree at that index not found.")
-      }
+                if (!js && six.isEmpty) {
+                  NotFound(s"Index ${ix + 1} out of bounds.")
+                } else if (js) {
+                  jsCache.synchronized {
+                    Ok(jsCache(ix)).map(_.putHeaders(`Content-Type`.parse("application/javascript")))
+                  }
+                } else {
+                  // format: off
+                  lazy val additions = List(
+                      <hr />,
+                      <p class="large">
+                        <a href={s"/download?tree=$idx"}>Download this debug output as JSON</a>
+                        <br />
+                        <a href={s"/download?tree=$idx${ampSeq}pretty"}>(Prettified JSON)</a>
+                      </p>,
+                      <hr />,
+                      <h1>Parse Trees</h1>,
+                      <div class="toc large">
+                        {seen.indices.map { ix =>
+                        <a href={"/view?tree=" + (ix + 1).toString}>{ix + 1}</a>
+                        }}
+                      </div>)
+                  // format: on
+
+                  var result = ""
+
+                  six.foreach { case (inp, tree) =>
+                    htmlCache.synchronized {
+                      jsCache.synchronized {
+                        htmlCache.get(ix) match {
+                          case Some(html) => result = html
+                          case None       =>
+                            HtmlFormatter(
+                              r => {
+                                result = r
+                                htmlCache(ix) = r
+                              },
+                              j => {
+                                jsCache(ix) = j
+                              },
+                              spaces = None,
+                              treeNum = idx,
+                              additions = additions
+                            ).process(inp, tree)
+                        }
+                      }
+                    }
+                  }
+
+                  Ok(result).map(_.putHeaders(`Content-Type`.parse("text/html")))
+                }
+              case Validated.Invalid(e) => BadRequest(s"Invalid parse for index: $e")
+            }
+          case _ => NotFound("Debug tree at that index not found.")
+        }
+      )
     }
 
     val app: HttpApp[F] = routes.orNotFound
@@ -198,7 +215,7 @@ sealed class WebView[F[_]: Logger: Async: Network, G] private[frontend] (
 }
 
 object WebView {
-  def apply[F[_]: Logger: Async: Network, G](
+  def apply[F[_]: Logger: Async: Network: Compression, G](
     cont: F[Resource[F, Server]] => G,
     host: Hostname = host"localhost",
     port: Port = port"8080"
@@ -214,7 +231,7 @@ object WebView {
   *   running after your parsers have run.
   */
 object WebViewUnsafeIO {
-  implicit val defaultIoRuntime: IORuntime = IORuntime.global
+  implicit private val defaultIoRuntime: IORuntime = IORuntime.global
 
   def make(
     host: Hostname = host"localhost",
@@ -236,9 +253,16 @@ object WebViewUnsafeIO {
   }
 }
 
-/** A raw HTML formatter for debug trees. If you don't want or need pretty-printing, pass `None` into `spaces`. */
-final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Option[Int], additions: Iterable[Node])
-  extends StatelessFrontend {
+/** A raw HTML formatter for debug trees. If you don't want or need pretty-printing, pass `None` into `spaces`. Separate
+  * continuation parameters are provided for the HTML and the JS.
+  */
+final private[parsley] class HtmlFormatter private[frontend] (
+  contHTML: String => Unit,
+  contJS: String => Unit,
+  spaces: Option[Int],
+  treeNum: Int,
+  additions: Iterable[Node]
+) extends ReusableFrontend {
   implicit private class Sanitize(s: String) {
     def sanitizeNewlines: String = s.replace("\r", "").replace("\n", nlSeq)
 
@@ -246,6 +270,8 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
 
     def nl: String = s.replace(nlSeq, "<br />")
   }
+
+  private lazy val style: String = dev.i10416.CSSMinifier.run(Styles.primaryStylesheet)
 
   override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
     implicit val funcTable: mutable.Buffer[String] = mutable.ListBuffer()
@@ -274,33 +300,91 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
           </p>
           <hr/>
           <h1>Parse Tree</h1>
-          <button id="unfold-btn" onclick="unfold_all()">
+          <button class="folds-btn" onclick="unfold_all()">
             Unfold All Children [!]
+          </button>
+
+          <button class="folds-btn" onclick="fold_all()">
+            Fold All Children [!]
           </button>
 
           {tree.toHTML}
 
           {additions}
 
-          ---[SCRIPT]---
+          <script src={s"view?tree=$treeNum&js"}></script>
         </body>
       </html>
     // format: on
 
     def script(): String = {
-      ("""<script>
-         |var funcs = [];
-         |
-         |function unfold_all() {
-         |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
-         |    document.getElementById("unfold-btn").remove();
-         |    funcs.forEach((f) => f.fun());
-         |  }
-         |}
-         |
-         |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
-        """funcs.sort((a, b) => { return a.id - b.id; });
-          |</script>""".stripMargin).amp
+      ("""var os = {};
+        |var fs = {};
+        |var fk = -1;
+        |var ss = {};
+        |""".stripMargin + funcTable.mkString(start = "", sep = "\n", end = "\n") +
+        """fk = Object.keys(ss).sort()[0];
+          |
+          |function unfold_all() {
+          |  if (confirm("Are you sure you want to unfold all the trees? This may crash your browser if the tree is very large!")) {
+          |    Object.keys(os).forEach((k) => load_child(k)(undefined));
+          |  }
+          |}
+          |
+          |function fold_all() {
+          |  if (confirm("Are you sure you want to fold all the trees? You will lose your unfolding progress!")) {
+          |    unload_children(fk)(undefined);
+          |  }
+          |}
+          |
+          |function asb(id, fun) {
+          |  if (!ss[id]) ss[id] = [];
+          |  ss[id].push(fun);
+          |}
+          |
+          |function unload_children(uuid) {
+          |  var evh = (e) => {
+          |    ss[uuid].forEach((f) => f());
+          |  };
+          |
+          |  return evh;
+          |}
+          |
+          |function lc(uuid) {
+          |  var evh = (e) => {
+          |    let target = document.getElementById("child_" + uuid);
+          |
+          |    if (target && target.firstElementChild && target.firstElementChild.className.indexOf("unloaded") !== 1) {
+          |      target.innerHTML = os[uuid][0];
+          |
+          |      if (target.hasAttribute("onclick")) {
+          |        target.removeAttribute("onclick");
+          |        target.addEventListener("click", lc(uuid), false);
+          |      }
+          |
+          |      let parent = document.getElementById("parent_" + os[uuid][1]);
+          |      if (parent) parent.addEventListener("click", unload_children(os[uuid][1]), false);
+          |    } else if (target) {
+          |      target.innerHTML = fs[uuid];
+          |    }
+          |
+          |    var event = e ? e : window.event;
+          |    event.cancelBubble = true;
+          |    if (event.stopPropagation) event.stopPropagation();
+          |    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+          |  };
+          |
+          |  return evh;
+          |}
+          |
+          |function unc(uuid) {
+          |  let target = document.getElementById("child_" + uuid);
+          |  if (target) target.innerHTML = fs[uuid];
+          |}
+          |""".stripMargin).amp.nl
+        .replaceAll("\\n\\s+(\\S)", "$1")
+        .replace(";\n", ";")
+        .replace(" = ", "=")
     }
 
     spaces match {
@@ -312,29 +396,34 @@ final class HtmlFormatter private[frontend] (cont: String => Unit, spaces: Optio
         printer.format(page, sb)
 
         // I have no idea how to get literal ampersands.
-        cont(
+        contHTML(
           "<!DOCTYPE html>\n" + sb
             .toString()
             .amp
             .nl
-            .replace("---[STYLE]---", Styles.primaryStylesheet)
-            .replace("---[SCRIPT]---", script())
+            .replace("---[STYLE]---", style)
         )
       case None      =>
-        cont(
+        contHTML(
           "<!DOCTYPE html>\n" + page
             .toString()
             .amp
             .nl
-            .replace("---[STYLE]---", Styles.primaryStylesheet)
-            .replace("---[SCRIPT]---", script())
+            .replace("---[STYLE]---", style)
         )
     }
 
+    contJS(script())
   }
 }
 
-object HtmlFormatter {
-  def apply(cont: String => Unit, spaces: Option[Int] = Some(2), additions: Iterable[Node] = Nil): HtmlFormatter =
-    new HtmlFormatter(cont, spaces, additions)
+private[parsley] object HtmlFormatter {
+  def apply(
+    contHTML: String => Unit,
+    contJS: String => Unit,
+    spaces: Option[Int] = Some(2),
+    treeNum: Int,
+    additions: Iterable[Node] = Nil
+  ): HtmlFormatter =
+    new HtmlFormatter(contHTML, contJS, spaces, treeNum, additions)
 }

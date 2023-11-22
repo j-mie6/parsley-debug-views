@@ -31,16 +31,19 @@ private[frontend] object ToHTML {
   // format: off
   implicit lazy val dtToH: ToHTML[DebugTree] = new ToHTML[DebugTree] {
     override def apply[V1 <: DebugTree](dt: V1)(implicit funcTable: mutable.Buffer[String]): Node = {
+      val parentUuid = nextUid()
+      val uname      = s"${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""}"
+
       dt.parseResults.get match {
         case ParseAttempt(ri, _, _, fp, tp, sc, res) =>
           <table class={if (dt.internalName != dt.parserName) "parser dotted" else "parser"}>
             <tr>
-              <td class={"attempt " + (if (sc) "success" else "failure")}>
+              <td id={s"parent_$parentUuid"} class={"attempt " + (if (sc) "success" else "failure")}>
                 {if (dt.internalName != dt.parserName) <p class="nickname">{dt.parserName}</p> else <!-- Name intact. -->}
                 <div class="info">
                   <table>
                     <tr>
-                      <th>{s"${dt.parserName} (${dt.internalName})"}</th><td>{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}</td>
+                      <th>{uname}</th><td>{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}</td>
                     </tr>
 
                     <tr>
@@ -58,7 +61,7 @@ private[frontend] object ToHTML {
                 </div>
 
                 <p class="overview">
-                  {dt.internalName}<br />{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}
+                  {uname}<br />{if (sc) "-[-{AMP}-]-#10004;" else "-[-{AMP}-]-#10008;"}
                 </p>
               </td>
             </tr>
@@ -68,28 +71,22 @@ private[frontend] object ToHTML {
                 if (dt.nodeChildren.nonEmpty) {
                   <table class="children">
                     <tr>
-                      {dt.nodeChildren.iterator.map { case (_, p) =>
-                        val uuid = nextUid()
+                      {
+                        dt.nodeChildren.iterator.map { case (_, p) =>
+                          val uuid = nextUid()
 
-                        funcTable +=
-                          s"""var loaded_$uuid = false;
-                             |function load_tree_$uuid() {
-                             |  if (!loaded_$uuid) {
-                             |    document.getElementById("child_$uuid").innerHTML = `${dtToH.apply[DebugTree](p)}`;
-                             |    document.getElementById("child_$uuid").removeAttribute("onclick");
-                             |
-                             |    loaded_uuid = true;
-                             |  }
-                             |}
-                             |
-                             |funcs.push({ id: $uuid, fun: load_tree_$uuid });
-                             |""".stripMargin
+                          funcTable +=
+                            s"""os[$uuid] = [`${dtToH.apply[DebugTree](p)}`, $parentUuid];
+                               |fs[$uuid] = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
+                               |asb($parentUuid, () => unc($uuid));
+                               |""".stripMargin
 
-                        <td id={s"child_$uuid"} onclick={s"load_tree_$uuid()"}>
-                          <div class="unloaded attempt">
-                            <p>{p.parserName}<br />({p.internalName})</p>
-                          </div>
-                        </td> }}
+                          <td class="parser-child" id={s"child_$uuid"} onclick={s"lc($uuid)(undefined)"}>
+                            <div class="unloaded attempt">
+                              <p>{p.parserName}<br />({p.internalName})</p>
+                            </div>
+                          </td> }
+                      }
                     </tr>
                   </table>
                 } else {

@@ -92,8 +92,10 @@ private[frontend] object TreeDisplay {
   )(implicit fontMult: Double): Pane = {
     // Shows the displayed name (renamed or otherwise) of the parser that produced the result tied
     // to this visual tree node.
+    val uname = s"${dtree.internalName}${if (dtree.childNumber.isDefined) s" (${dtree.childNumber.get})" else ""}"
+
     val nameText = new Text {
-      text = dtree.internalName
+      text = uname
       font = defaultFont(1, FontWeight.Black)
       alignmentInParent = Pos.Center
     }

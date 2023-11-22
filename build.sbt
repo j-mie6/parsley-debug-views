@@ -30,15 +30,18 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 )
 
 // Shared dependencies for all frontends:
+val baseParsleyVersion = "4.4-29286a8-SNAPSHOT"
+
 lazy val commonSettings = Seq(
   headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
   headerEmptyLine      := false,
   resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
-    "com.github.j-mie6" %%% "parsley"       % "4.4-d2601fc-SNAPSHOT",
-    "com.github.j-mie6" %%% "parsley-debug" % "4.4-d2601fc-SNAPSHOT",
-    "org.scalactic"     %%% "scalactic"     % "3.2.17" % Test,
-    "org.scalatest"     %%% "scalatest"     % "3.2.17" % Test
+    "com.github.j-mie6" %%% "parsley",
+    "com.github.j-mie6" %%% "parsley-debug"
+  ).map(_ % baseParsleyVersion) ++ Seq(
+    "org.scalactic" %%% "scalactic" % "3.2.17" % Test,
+    "org.scalatest" %%% "scalatest" % "3.2.17" % Test
   )
 )
 
@@ -80,7 +83,7 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   .settings(
     commonSettings,
     name                := "parsley-debug-sfx",
-    libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30"
+    libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30" // Later versions unsupported by Java 8.
   )
 
 // Here's hoping the stable version of Http4S works fine!
@@ -97,13 +100,17 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name                 := "parsley-debug-http",
     circe,
     libraryDependencies ++= Seq(
-      "org.http4s"             %%% "http4s-ember-client" % http4sVersion,
-      "org.http4s"             %%% "http4s-ember-server" % http4sVersion,
-      "org.http4s"             %%% "http4s-dsl"          % http4sVersion,
-      "org.http4s"             %%% "http4s-circe"        % http4sVersion,
-      "org.typelevel"          %%% "log4cats-core"       % log4catsVersion,
-      "org.typelevel"          %%% "log4cats-noop"       % log4catsVersion,
-      "org.scala-lang.modules" %%% "scala-xml"           % "2.2.0"
+      "org.http4s" %%% "http4s-ember-client",
+      "org.http4s" %%% "http4s-ember-server",
+      "org.http4s" %%% "http4s-dsl",
+      "org.http4s" %%% "http4s-circe"
+    ).map(_ % http4sVersion) ++ Seq(
+      "org.typelevel" %%% "log4cats-core",
+      "org.typelevel" %%% "log4cats-noop"
+    ).map(_ % log4catsVersion) ++ Seq(
+      "org.scala-lang.modules" %%% "scala-xml"   % "2.2.0",
+      // TODO: find a replacement for this minifier. N.B. This is licensed under the Apache License 2.0.
+      "dev.i10416"             %%% "cssminifier" % "0.0.2"
     )
   )
   .jvmSettings(

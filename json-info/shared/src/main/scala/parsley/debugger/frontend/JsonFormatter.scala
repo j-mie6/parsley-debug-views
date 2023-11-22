@@ -23,7 +23,7 @@ import parsley.debugger.frontend.internal.CJson.*
   * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
   * on attaching debuggers to find out how to prevent that.
   */
-sealed class JsonFormatter private[frontend] (cont: Output => Unit) extends StatelessFrontend {
+sealed class JsonFormatter private[frontend] (cont: Output => Unit) extends ReusableFrontend {
   override protected def processImpl(input: => String, tree: => DebugTree): Unit =
     cont(
       JsonObject(
