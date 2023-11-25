@@ -30,7 +30,7 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
 )
 
 // Shared dependencies for all frontends:
-val baseParsleyVersion = "4.4-29286a8-SNAPSHOT"
+val baseParsleyVersion = "4.4-6f5b209-SNAPSHOT"
 
 lazy val commonSettings = Seq(
   headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
