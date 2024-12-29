@@ -98,7 +98,7 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform /*, NativePlatform*/
     ).map(_ % log4catsVersion) ++ Seq(
       "org.scala-lang.modules" %%% "scala-xml"   % "2.3.0",
       // FIXME: find a replacement for this minifier. N.B. This is licensed under the Apache License 2.0.
-      "dev.i10416"             %%% "cssminifier" % "0.0.2"
+      "dev.i10416"             %%% "cssminifier" % "0.0.3"
     )
   )
   .jvmSettings(
