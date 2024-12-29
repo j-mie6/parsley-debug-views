@@ -12,36 +12,32 @@ ThisBuild / developers       := List(
   tlGitHubDev("mf42-dzh", "Fawwaz Abdullah")
 )
 
-// publish to s01.oss.sonatype.org (set to true to publish to oss.sonatype.org instead)
-ThisBuild / tlSonatypeUseLegacyHost := false
-
 val Scala212 = "2.12.18"
-val Scala213 = "2.13.12"
-val Scala3   = "3.3.1"
+val Scala213 = "2.13.14"
+val Scala3   = "3.3.3"
 
 ThisBuild / crossScalaVersions := Seq(Scala212, Scala213, Scala3)
 ThisBuild / scalaVersion       := Scala213 // the default Scala
 
 // Java version for CI and support
 ThisBuild / githubWorkflowJavaVersions := Seq(
-  JavaSpec.temurin("8"),
   JavaSpec.temurin("11"),
-  JavaSpec.temurin("17")
+  JavaSpec.temurin("17"),
+  JavaSpec.temurin("21"),
 )
 
 // Shared dependencies for all frontends:
-val baseParsleyVersion = "4.4-6f5b209-SNAPSHOT"
+val baseParsleyVersion = "5.0.0-M8"
 
 lazy val commonSettings = Seq(
   headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
   headerEmptyLine      := false,
   resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
-    "com.github.j-mie6" %%% "parsley",
-    "com.github.j-mie6" %%% "parsley-debug"
-  ).map(_ % baseParsleyVersion) ++ Seq(
-    "org.scalactic" %%% "scalactic" % "3.2.17" % Test,
-    "org.scalatest" %%% "scalatest" % "3.2.17" % Test
+    "com.github.j-mie6" %%% "parsley" % baseParsleyVersion,
+    "com.github.j-mie6" %%% "parsley-debug" % baseParsleyVersion,
+    "org.scalactic" %%% "scalactic" % "3.2.19" % Test,
+    "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
   )
 )
 
@@ -57,7 +53,7 @@ lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   )
 
 // Circe JSON library.
-val circeVersion = "0.14.6"
+val circeVersion = "0.14.10"
 lazy val circe   = Seq(
   libraryDependencies ++= Seq(
     "io.circe" %%% "circe-core",
@@ -83,14 +79,16 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   .settings(
     commonSettings,
     name                := "parsley-debug-sfx",
-    libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30" // Later versions unsupported by Java 8.
+    libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30" // Later versions unsupported by Java 8. (TODO: I don't really mind this anymore)
   )
 
+
 // Here's hoping the stable version of Http4S works fine!
-val http4sVersion   = "0.23.23" // For Scala 2.12 compatibility, this version is needed.
+val http4sVersion   = "0.23.30" // For Scala 2.12 compatibility, this version is needed.
 val log4catsVersion = "2.6.0"
 
-lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+// native is out for http4s, because it doesn't support 0.5 yet...
+lazy val http_server = crossProject(JVMPlatform, JSPlatform/*, NativePlatform*/)
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .dependsOn(json_info) // We want the CJson type class here too.
@@ -108,8 +106,8 @@ lazy val http_server = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "log4cats-core",
       "org.typelevel" %%% "log4cats-noop"
     ).map(_ % log4catsVersion) ++ Seq(
-      "org.scala-lang.modules" %%% "scala-xml"   % "2.2.0",
-      // TODO: find a replacement for this minifier. N.B. This is licensed under the Apache License 2.0.
+      "org.scala-lang.modules" %%% "scala-xml"   % "2.3.0",
+      // FIXME: find a replacement for this minifier. N.B. This is licensed under the Apache License 2.0.
       "dev.i10416"             %%% "cssminifier" % "0.0.2"
     )
   )
