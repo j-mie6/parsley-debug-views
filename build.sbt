@@ -4,7 +4,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 ThisBuild / tlBaseVersion := "0.1" // your current series x.y
 
 ThisBuild / organization := "com.github.j-mie6"
-ThisBuild / organizationName := "Parsley Contributors <https://github.com/j-mie6/Parsley/graphs/contributors> + Fawwaz Abdullah"
+ThisBuild / organizationName := "Parsley Debug View Contributors <https://github.com/j-mie6/parsley-debug-views/graphs/contributors>"
 ThisBuild / startYear  := Some(2023)
 ThisBuild / licenses   := Seq("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause"))
 ThisBuild / developers := List(
