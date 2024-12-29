@@ -3,16 +3,16 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug.internal
 
 import org.typelevel.scalaccompat.annotation.unused
-import parsley.debugger.frontend.internal.Defaults.*
+import parsley.debug.internal.Defaults.*
 import scalafx.geometry.Orientation
 import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.SplitPane
 
 // Three-way split pane. Allows a right and left hand main split.
-private[frontend] class ThreeSplitPane(
+private [debug] class ThreeSplitPane(
   outer: Scene,
   mainChild: Node,
   topChild: Node,

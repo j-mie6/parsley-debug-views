@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend
+package parsley.debug
 
 import scala.collection.mutable
 import scala.xml.{Node, PrettyPrinter}
@@ -29,9 +29,8 @@ import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.noop.NoOpLogger
 import org.typelevel.log4cats.syntax.*
 import org.typelevel.scalaccompat.annotation.unused
-import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.ToHTML.*
-import parsley.debugger.frontend.internal.Styles
+import parsley.debug.internal.ToHTML.*
+import parsley.debug.internal.Styles
 
 /** A frontend that uses `http4s` and the Ember server to provide an interactive web frontend for debugging parsers.
   * This is most useful for remote debugging of one's parsers.
@@ -46,11 +45,11 @@ import parsley.debugger.frontend.internal.Styles
   *
   * '''Warning''': large tree outputs from debugged parsers may crash web browsers' rendering systems.
   */
-sealed class WebView[F[_]: Logger: Async: Network: Compression, G] private[frontend] (
+sealed class WebView[F[_]: Logger: Async: Network: Compression, G] private[debug] (
   cont: F[Resource[F, Server]] => G,
   host: Hostname,
   port: Port
-) extends ReusableFrontend {
+) extends DebugView.Reusable {
   // Seen trees. We'll use this to create links to previously-seen trees.
   private val seen: mutable.ListBuffer[(String, DebugTree)] = new mutable.ListBuffer()
   private val jsonCache: mutable.HashMap[Int, String]       = new mutable.HashMap()
@@ -104,7 +103,7 @@ sealed class WebView[F[_]: Logger: Async: Network: Compression, G] private[front
                               cache(ix) = r
                             },
                             pretty = pretty
-                          ).process(inp, tree)
+                          ).render(inp, tree)
                       }
                     }
                   }
@@ -169,7 +168,7 @@ sealed class WebView[F[_]: Logger: Async: Network: Compression, G] private[front
                               spaces = None,
                               treeNum = idx,
                               additions = additions
-                            ).process(inp, tree)
+                            ).render(inp, tree)
                         }
                       }
                     }
@@ -200,7 +199,7 @@ sealed class WebView[F[_]: Logger: Async: Network: Compression, G] private[front
     } yield srv
   }
 
-  override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
+  override private [debug] def render(input: =>String, tree: =>DebugTree): Unit = {
     // The trees will be listed in index order.
     seen.synchronized {
       seen.append((input, tree))
@@ -256,13 +255,13 @@ object WebViewUnsafeIO {
 /** A raw HTML formatter for debug trees. If you don't want or need pretty-printing, pass `None` into `spaces`. Separate
   * continuation parameters are provided for the HTML and the JS.
   */
-final private[parsley] class HtmlFormatter private[frontend] (
+final private [debug] class HtmlFormatter(
   contHTML: String => Unit,
   contJS: String => Unit,
   spaces: Option[Int],
   treeNum: Int,
   additions: Iterable[Node]
-) extends ReusableFrontend {
+) extends DebugView.Reusable {
   implicit private class Sanitize(s: String) {
     def sanitizeNewlines: String = s.replace("\r", "").replace("\n", nlSeq)
 
@@ -273,8 +272,8 @@ final private[parsley] class HtmlFormatter private[frontend] (
 
   private lazy val style: String = dev.i10416.CSSMinifier.run(Styles.primaryStylesheet)
 
-  override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
-    implicit val funcTable: mutable.Buffer[String] = mutable.ListBuffer()
+  override private [debug] def render(input: =>String, tree: =>DebugTree): Unit = {
+    implicit val funcTable: mutable.Buffer[String] = mutable.ListBuffer() // FIXME:
 
     // format: off
     val page =

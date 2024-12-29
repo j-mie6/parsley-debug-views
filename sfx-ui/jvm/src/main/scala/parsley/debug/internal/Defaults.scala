@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug.internal
 
 import scalafx.geometry.Insets
 import scalafx.scene.layout.{
@@ -19,7 +19,7 @@ import scalafx.scene.paint.{Color, Paint}
 import scalafx.scene.text.{Font, FontWeight}
 
 // This will contain common constants and methods.
-private[frontend] object Defaults {
+private [debug] object Defaults {
   // Default background; #f4f4f4.
   val DefaultBGColour: Color = Color.rgb(244, 244, 244)
 

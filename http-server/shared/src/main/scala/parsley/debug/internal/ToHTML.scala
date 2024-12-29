@@ -3,18 +3,18 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug.internal
 
 import scala.collection.mutable
 import scala.xml.*
 
-import parsley.debugger.{DebugTree, ParseAttempt}
+import parsley.debug.{DebugTree, ParseAttempt}
 
-private[frontend] trait ToHTML[-V] {
+private [debug] trait ToHTML[-V] {
   def apply[V1 <: V](x: V1)(implicit funcTable: mutable.Buffer[String]): Node
 }
 
-private[frontend] object ToHTML {
+private [debug] object ToHTML {
   implicit class ToHTMLOps[-V: ToHTML](x: V) {
     def toHTML(implicit funcTable: mutable.Buffer[String]): Node = implicitly[ToHTML[V]].apply[V](x)
   }

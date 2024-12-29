@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug.internal
 
-private[frontend] object Styles {
+private [debug] object Styles {
   val primaryStylesheet: String = """
       |* {
       |  border-spacing: 0 !important;

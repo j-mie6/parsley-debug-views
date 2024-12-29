@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug.internal
 
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.DoubleProperty
@@ -11,7 +11,7 @@ import scalafx.geometry.Pos
 import scalafx.scene.control.{Button, Slider}
 import scalafx.scene.layout.GridPane
 
-private[frontend] class TreeControls(
+private [debug] class TreeControls(
   view: TreeDisplay,
   zoomLevel: DoubleProperty
 ) extends GridPane { outer =>

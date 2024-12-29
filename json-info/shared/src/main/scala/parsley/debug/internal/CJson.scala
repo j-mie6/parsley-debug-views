@@ -3,22 +3,21 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug
+package internal
 
 import io.circe.*
 import io.circe.syntax.*
 
 import CJson.Output
 
-import parsley.debugger.{DebugTree, ParseAttempt}
-
 // Small type class for quickly converting objects into JSON.
 // Specialised for a Parsley debugger frontend.
-private[frontend] trait CJson[-V] extends (V => Output) {
+private [debug] trait CJson[-V] extends (V => Output) {
   def apply(value: V): Output
 }
 
-private[frontend] object CJson {
+private [debug] object CJson {
   type Output = Json
 
   // Quick extension for converting to JSON.

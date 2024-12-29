@@ -3,14 +3,14 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug
+package internal
 
 import javafx.event.EventHandler
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout
-import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.Defaults.*
-import parsley.debugger.frontend.internal.TreeDisplay.mkTree
+import parsley.debug.internal.Defaults.*
+import parsley.debug.internal.TreeDisplay.mkTree
 import scalafx.Includes.*
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.{BooleanProperty, DoubleProperty, ObjectProperty}
@@ -27,7 +27,7 @@ import scalafx.scene.transform.Scale
 import scala.collection.mutable
 import scalafx.beans.binding.ObjectBinding
 
-private[frontend] class TreeDisplay(
+private [debug] class TreeDisplay(
   outer: Scene,
   tree: DebugTree,
   selected: ObjectProperty[Option[DebugTree]],
@@ -87,7 +87,7 @@ private[frontend] class TreeDisplay(
   }
 }
 
-private[frontend] object TreeDisplay {
+private [debug] object TreeDisplay {
   private def mkDTreeRect(
     dtree: DebugTree,
     selected: ObjectProperty[Option[DebugTree]]

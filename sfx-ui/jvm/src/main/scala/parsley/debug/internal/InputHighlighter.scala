@@ -3,10 +3,10 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug
+package internal
 
-import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.Defaults.*
+import parsley.debug.internal.Defaults.*
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.ObjectProperty
 import scalafx.scene.control.ScrollPane
@@ -15,7 +15,7 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.paint.Color
 import scalafx.scene.text.{FontWeight, Text, TextFlow}
 
-private[frontend] class InputHighlighter(
+private [debug] class InputHighlighter(
   fullInput: String,
   selected: ObjectProperty[Option[DebugTree]]
 )(implicit fontMult: Double)

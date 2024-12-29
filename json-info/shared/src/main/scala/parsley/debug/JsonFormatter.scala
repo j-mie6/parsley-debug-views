@@ -3,13 +3,12 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend
+package parsley.debug
 
 import io.circe.*
 import io.circe.syntax.*
 
-import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal.CJson.*
+import parsley.debug.internal.CJson.*
 
 /** A frontend that emits a JSON-format string representing the parse tree.
   *
@@ -23,8 +22,8 @@ import parsley.debugger.frontend.internal.CJson.*
   * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
   * on attaching debuggers to find out how to prevent that.
   */
-sealed class JsonFormatter private[frontend] (cont: Output => Unit) extends ReusableFrontend {
-  override protected def processImpl(input: => String, tree: => DebugTree): Unit =
+sealed class JsonFormatter private [debug] (cont: Output => Unit) extends DebugView.Reusable {
+  override private [debug] def render(input: =>String, tree: =>DebugTree): Unit =
     cont(
       JsonObject(
         "input" -> input.toJSON,
@@ -38,7 +37,7 @@ object JsonFormatter {
 }
 
 /** A version of [[JsonFormatter]] that emits a JSON string instead of a [[io.circe.Json]] object. */
-final class JsonStringFormatter private[frontend] (
+final class JsonStringFormatter private [debug] (
   cont: String => Unit,
   pretty: Boolean,
   indent: Int,

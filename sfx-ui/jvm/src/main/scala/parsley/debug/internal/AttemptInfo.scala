@@ -3,10 +3,10 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend.internal
+package parsley.debug
+package internal
 
-import parsley.debugger.{DebugTree, ParseAttempt}
-import parsley.debugger.frontend.internal.Defaults._
+import parsley.debug.internal.Defaults._
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.ObjectProperty
 import scalafx.geometry.Pos
@@ -15,7 +15,7 @@ import scalafx.scene.control.ScrollPane.ScrollBarPolicy
 import scalafx.scene.layout.{GridPane, Priority, VBox}
 import scalafx.scene.text.{FontWeight, Text, TextFlow}
 
-private[frontend] class AttemptInfo(dtree: ObjectProperty[Option[DebugTree]])(implicit
+private [debug] class AttemptInfo(dtree: ObjectProperty[Option[DebugTree]])(implicit
   fontMult: Double
 ) extends ScrollPane {
   // Makes sure the content doesn't go off the sides:
@@ -49,7 +49,7 @@ private[frontend] class AttemptInfo(dtree: ObjectProperty[Option[DebugTree]])(im
   )
 }
 
-private[frontend] class Attempt(att: ParseAttempt)(implicit fontMult: Double) extends GridPane {
+private [debug] class Attempt(att: ParseAttempt)(implicit fontMult: Double) extends GridPane {
   // Visual parameters.
   background = simpleBackground(if (att.success) SuccessColour else FailureColour)
 

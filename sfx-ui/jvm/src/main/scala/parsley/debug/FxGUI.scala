@@ -3,17 +3,16 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debugger.frontend
+package parsley.debug
 
 import javafx.embed.swing.JFXPanel
-import parsley.debugger.DebugTree
-import parsley.debugger.frontend.internal._
-import parsley.debugger.frontend.internal.Defaults._
+import parsley.debug.internal.Defaults._
 import scalafx.application.Platform
 import scalafx.beans.property.{DoubleProperty, ObjectProperty}
 import scalafx.scene.Scene
 import scalafx.scene.layout.HBox
 import scalafx.stage.Stage
+import internal.{TreeDisplay, AttemptInfo, ThreeSplitPane, InputHighlighter, TreeControls}
 
 /** ScalaFX (on JavaFX) renderer for debug trees. This frontend provides interactive visuals to explore the parse /
   * debug tree of a parser.
@@ -37,10 +36,10 @@ import scalafx.stage.Stage
   * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
   * on attaching debuggers to find out how to prevent that.
   */
-final class FxGUI private[frontend] (fontMult: Double) extends ReusableFrontend {
+final class FxGUI private [debug] (fontMult: Double) extends DebugView.Reusable {
   implicit private val gfMult: Double = fontMult
 
-  override protected def processImpl(input: => String, tree: => DebugTree): Unit = {
+  override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
     // This forces initialisation of JavaFX's internals.
     // We don't actually need this for anything other than that.
     new JFXPanel()
