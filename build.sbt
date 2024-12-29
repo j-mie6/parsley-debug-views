@@ -13,6 +13,7 @@ val scalatestVersion = "3.2.19"
 val http4sVersion   = "0.23.30" // For Scala 2.12 compatibility, this version is needed.
 val log4catsVersion = "2.6.0"
 val scalaXmlVersion = "2.3.0"
+val scalafxVersion = "19.0.0-R30" // Later versions unsupported by Java 8. (I don't really mind this anymore)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -30,7 +31,7 @@ inThisBuild(List(
   crossScalaVersions := Seq(Scala213, Scala212, Scala3),
   scalaVersion := Scala213,
   // CI Configuration
-  //tlCiReleaseBranches := Seq(mainBranch),
+  tlCiReleaseBranches := Seq(mainBranch),
   tlCiScalafmtCheck := false,
   tlCiHeaderCheck := true,
   githubWorkflowJavaVersions := Seq(Java11, Java17, Java21),
@@ -70,14 +71,13 @@ lazy val jsonInfo = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     )
   )
 
-lazy val sfxUi = crossProject(JVMPlatform)
-  .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Full)
+// this only works for java, obviously.
+lazy val sfxUi = project
   .in(file("sfx-ui"))
   .settings(
     commonSettings,
     name := "parsley-debug-sfx",
-    libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30" // Later versions unsupported by Java 8. (TODO: I don't really mind this anymore)
+    libraryDependencies += "org.scalafx" %%% "scalafx" % scalafxVersion
   )
 
 // native is out for http4s, because it doesn't support 0.5 yet...
@@ -114,5 +114,5 @@ lazy val unidocs = project
   .enablePlugins(TypelevelUnidocPlugin)
   .settings(
     name := "parsley-debug-view-docs",
-    ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(jsonInfo.jvm, sfxUi.jvm/*, http4sServer*/),
+    ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(jsonInfo.jvm, sfxUi/*, http4sServer*/),
   )
