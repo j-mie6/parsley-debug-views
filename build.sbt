@@ -23,7 +23,7 @@ ThisBuild / scalaVersion       := Scala213 // the default Scala
 ThisBuild / githubWorkflowJavaVersions := Seq(
   JavaSpec.temurin("11"),
   JavaSpec.temurin("17"),
-  JavaSpec.temurin("21"),
+  JavaSpec.temurin("21")
 )
 
 // Shared dependencies for all frontends:
@@ -34,10 +34,10 @@ lazy val commonSettings = Seq(
   headerEmptyLine      := false,
   resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
-    "com.github.j-mie6" %%% "parsley" % baseParsleyVersion,
+    "com.github.j-mie6" %%% "parsley"       % baseParsleyVersion,
     "com.github.j-mie6" %%% "parsley-debug" % baseParsleyVersion,
-    "org.scalactic" %%% "scalactic" % "3.2.19" % Test,
-    "org.scalatest" %%% "scalatest" % "3.2.19" % Test,
+    "org.scalactic"     %%% "scalactic"     % "3.2.19" % Test,
+    "org.scalatest"     %%% "scalatest"     % "3.2.19" % Test
   )
 )
 
@@ -78,17 +78,16 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   .in(file("sfx-ui"))
   .settings(
     commonSettings,
-    name                := "parsley-debug-sfx",
+    name := "parsley-debug-sfx",
     libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30" // Later versions unsupported by Java 8. (TODO: I don't really mind this anymore)
   )
-
 
 // Here's hoping the stable version of Http4S works fine!
 val http4sVersion   = "0.23.30" // For Scala 2.12 compatibility, this version is needed.
 val log4catsVersion = "2.6.0"
 
 // native is out for http4s, because it doesn't support 0.5 yet...
-lazy val http_server = crossProject(JVMPlatform, JSPlatform/*, NativePlatform*/)
+lazy val http_server = crossProject(JVMPlatform, JSPlatform /*, NativePlatform*/ )
   .withoutSuffixFor(JVMPlatform)
   .crossType(CrossType.Full)
   .dependsOn(json_info) // We want the CJson type class here too.
