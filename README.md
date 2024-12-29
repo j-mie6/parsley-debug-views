@@ -11,7 +11,7 @@ Imperial College London by Fawwaz Abdullah (@mf42-dzh).
 Each sub-project contains one view, currently:
 - `parsley-debug-sfx` (@ `sfx-ui`): A [ScalaFX](https://www.scalafx.org/)-powered interactive GUI for exploring parser execution trees, `FxGUI`.
 - `parsley-debug-json` (@ `json-info`): A JSON string generator, `JsonFormatter` and `JsonStringFormatter`.
-- `parsley-debug-http` (@ `http-server`): A [http4s](https://http4s.org/) web server providing a semi-interactive parse tree viewer. The main class is `WebView`, but there is a helper object for people who are not interested in `cats` or `cats-effect`, `WebViewUnsafeIO`.
+<!-- - `parsley-debug-http` (@ `http-server`): A [http4s](https://http4s.org/) web server providing a semi-interactive parse tree viewer. The main class is `WebView`, but there is a helper object for people who are not interested in `cats` or `cats-effect`, `WebViewUnsafeIO`.-->
 
 After adding one of these projects as a dependency, use one of the `attach` combinators in `parsley.debug.combinators` to make a parser render the debugging output with the given view. You can find the views within the package `parsley.debug`.
 Currently, these views only support `parsley::5.0.0-M9` and above.
@@ -29,26 +29,28 @@ The different views work on different platforms:
 ### `JsonFormatter` (`parsley-debug-json`)
 | Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
 | -------- | ------------------ | ------------------ | ------------------- |
-| 2.12     | :x:                | :x:                | :x:                 |
+| 2.12     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
 | 2.13     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
 | 3.0      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
 
+<!--
 ### `WebView` (`parsley-debug-http`)
 | Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
 | -------- | ------------------ | ------------------ | ------------------- |
 | 2.12     | :x:                | :x:                | :x:                 |
 | 2.13     | :heavy_check_mark: | :heavy_check_mark: | :x:                 |
 | 3.0      | :heavy_check_mark: | :heavy_check_mark: | :x:                 |
+-->
 
 ### `FxGUI` (`parsley-debug-sfx`)
 | Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
 | -------- | ------------------ | ------------------ | ------------------- |
-| 2.12     | :x:                | :x:                | :x:                 |
+| 2.12     | :heavy_check_mark: | :x:                | :x:                 |
 | 2.13     | :heavy_check_mark: | :x:                | :x:                 |
 | 3.0      | :heavy_check_mark: | :x:                | :x:                 |
 
-Scala Native 0.5 support would be available for `parsley-debug-http` when `http4s`
-has support. 2.12 support for all three new views will be supported in future too.
+<!--Scala Native 0.5 support would be available for `parsley-debug-http` when `http4s`
+has support. 2.12 support for all three new views will be supported in future too.-->
 
 ## Example
 
