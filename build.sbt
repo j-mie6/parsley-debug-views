@@ -3,12 +3,12 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 // https://typelevel.org/sbt-typelevel/faq.html#what-is-a-base-version-anyway
 ThisBuild / tlBaseVersion := "0.1" // your current series x.y
 
-ThisBuild / organization     := "io.github.mf42-dzh"
-ThisBuild / organizationName := "Fawwaz Abdullah"
-ThisBuild / startYear        := Some(2023)
-ThisBuild / licenses         := Seq("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause"))
-ThisBuild / developers       := List(
-  // your GitHub handle and name
+ThisBuild / organization := "com.github.j-mie6"
+ThisBuild / organizationName := "Parsley Contributors <https://github.com/j-mie6/Parsley/graphs/contributors> + Fawwaz Abdullah"
+ThisBuild / startYear  := Some(2023)
+ThisBuild / licenses   := Seq("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause"))
+ThisBuild / developers := List(
+  tlGitHubDev("j-mie6", "Jamie Willis"),
   tlGitHubDev("mf42-dzh", "Fawwaz Abdullah")
 )
 
@@ -41,16 +41,7 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = tlCrossRootProject.aggregate(con_ui, json_info, sfx_ui, http_server)
-
-lazy val con_ui = crossProject(JVMPlatform, JSPlatform, NativePlatform)
-  .withoutSuffixFor(JVMPlatform)
-  .crossType(CrossType.Full)
-  .in(file("con-ui"))
-  .settings(
-    commonSettings,
-    name := "parsley-debug-console"
-  )
+lazy val root = tlCrossRootProject.aggregate(json_info, sfx_ui, http_server)
 
 // Circe JSON library.
 val circeVersion = "0.14.10"
