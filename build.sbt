@@ -70,6 +70,7 @@ lazy val sfx_ui = crossProject(JVMPlatform)
   .in(file("sfx-ui"))
   .settings(
     commonSettings,
+    scalacOptions += "-Ymacro-annotations",
     name := "parsley-debug-sfx",
     libraryDependencies += "org.scalafx" %%% "scalafx" % "19.0.0-R30" // Later versions unsupported by Java 8. (TODO: I don't really mind this anymore)
   )

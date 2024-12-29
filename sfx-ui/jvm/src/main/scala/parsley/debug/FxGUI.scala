@@ -36,8 +36,8 @@ import internal.{TreeDisplay, AttemptInfo, ThreeSplitPane, InputHighlighter, Tre
   * It is recommended that all memory-heavy types (e.g. closures) are not stored explicitly. Consult the documentation
   * on attaching debuggers to find out how to prevent that.
   */
-final class FxGUI private [debug] (fontMult: Double) extends DebugView.Reusable {
-  implicit private val gfMult: Double = fontMult
+sealed trait FxGUI extends DebugView.Reusable {
+  implicit protected val fontMult: Double
 
   override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
     // This forces initialisation of JavaFX's internals.
@@ -70,7 +70,11 @@ final class FxGUI private [debug] (fontMult: Double) extends DebugView.Reusable 
   }
 }
 
-object FxGUI {
-  /** Create a new instance of [[FxGUI]] with a given font size multiplier. */
-  def apply(mult: Double = 1.0): FxGUI = new FxGUI(mult)
+object FxGUI extends DebugView.Reusable with FxGUI {
+    override implicit val fontMult = 1.0
+
+    /** Create a new instance of [[FxGUI]] with a given font size multiplier. */
+    def apply(mult: Double): FxGUI = new FxGUI {
+        override implicit val fontMult = mult
+    }
 }

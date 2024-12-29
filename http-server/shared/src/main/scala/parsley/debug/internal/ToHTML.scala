@@ -3,20 +3,19 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-package parsley.debug.internal
+package parsley.debug
+package internal
 
 import scala.collection.mutable
 import scala.xml.*
 
-import parsley.debug.{DebugTree, ParseAttempt}
-
 private [debug] trait ToHTML[-V] {
-  def apply[V1 <: V](x: V1)(implicit funcTable: mutable.Buffer[String]): Node
+  def apply[V1 <: V](x: V1, funcTable: mutable.Buffer[String]): Node
 }
 
 private [debug] object ToHTML {
   implicit class ToHTMLOps[-V: ToHTML](x: V) {
-    def toHTML(implicit funcTable: mutable.Buffer[String]): Node = implicitly[ToHTML[V]].apply[V](x)
+    def toHTML(funcTable: mutable.Buffer[String]): Node = implicitly[ToHTML[V]].apply[V](x, funcTable)
   }
 
   private var uid: Long = -1L
@@ -30,7 +29,7 @@ private [debug] object ToHTML {
 
   // format: off
   implicit lazy val dtToH: ToHTML[DebugTree] = new ToHTML[DebugTree] {
-    override def apply[V1 <: DebugTree](dt: V1)(implicit funcTable: mutable.Buffer[String]): Node = {
+    override def apply[V1 <: DebugTree](dt: V1, funcTable: mutable.Buffer[String]): Node = {
       val parentUuid = nextUid()
       val uname      = s"${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""}"
 
@@ -76,7 +75,7 @@ private [debug] object ToHTML {
                           val uuid = nextUid()
 
                           funcTable +=
-                            s"""os[$uuid] = [`${dtToH.apply[DebugTree](p)}`, $parentUuid];
+                            s"""os[$uuid] = [`${dtToH.apply[DebugTree](p, funcTable)}`, $parentUuid];
                                |fs[$uuid] = `<div class="unloaded attempt"><p>${p.parserName}<br />(${p.internalName})</p></div>`;
                                |asb($parentUuid, () => unc($uuid));
                                |""".stripMargin

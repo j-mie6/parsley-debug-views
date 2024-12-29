@@ -273,7 +273,7 @@ final private [debug] class HtmlFormatter(
   private lazy val style: String = dev.i10416.CSSMinifier.run(Styles.primaryStylesheet)
 
   override private [debug] def render(input: =>String, tree: =>DebugTree): Unit = {
-    implicit val funcTable: mutable.Buffer[String] = mutable.ListBuffer() // FIXME:
+    val funcTable = mutable.ListBuffer.empty[String]
 
     // format: off
     val page =
