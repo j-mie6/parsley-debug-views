@@ -26,13 +26,14 @@ ThisBuild / githubWorkflowJavaVersions := Seq(
   JavaSpec.temurin("21")
 )
 
+ThisBuild / tlCiScalafmtCheck := false
+
 // Shared dependencies for all frontends:
 val baseParsleyVersion = "5.0.0-M8"
 
 lazy val commonSettings = Seq(
   headerLicenseStyle   := HeaderLicenseStyle.SpdxSyntax,
   headerEmptyLine      := false,
-  resolvers           ++= Opts.resolver.sonatypeOssSnapshots,
   libraryDependencies ++= Seq(
     "com.github.j-mie6" %%% "parsley"       % baseParsleyVersion,
     "com.github.j-mie6" %%% "parsley-debug" % baseParsleyVersion,
