@@ -18,7 +18,7 @@ Currently, these views only support `parsley::5.0.0-M9` and above.
 
 ## Example
 
-Assuming you have `parsley-debug-sfx` in your dependencies, this is a small example in debugging an arithmetic parser:
+Assuming you have `parsley-debug-sfx` in your dependencies, this is a small example in debugging an arithmetic parser (with either `-experimental` for Scala 3 or `-Ymacro-annotations` for Scala 2.13):
 
 ```scala
 import parsley.quick.*
