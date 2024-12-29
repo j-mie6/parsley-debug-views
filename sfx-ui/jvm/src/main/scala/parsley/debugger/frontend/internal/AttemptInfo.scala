@@ -66,9 +66,9 @@ private[frontend] class Attempt(att: ParseAttempt)(implicit fontMult: Double) ex
 
   // Contents.
   add(
-    {
-      val text = new Text {
-        text = if (att.fromOffset == att.toOffset) {
+    new TextFlow(
+      new Text {
+        this.text = if (att.fromOffset == att.toOffset) {
           "*** Parser did not consume input. ***"
         } else {
           val untilLB  = att.rawInput.takeWhile(!"\r\n".contains(_))
@@ -78,22 +78,20 @@ private[frontend] class Attempt(att: ParseAttempt)(implicit fontMult: Double) ex
         }
         font = monoFont(1, FontWeight.Bold)
       }
-      new TextFlow(text)
-    },
+    ),
     1,
     0
   )
 
   add(
-    {
-      val text = new Text {
-        text =
-          if (att.fromOffset == att.toOffset) "N/A"
-          else s"${att.fromPos} to ${att.toPos}"
-        font = defaultFont(1)
-      }
-      new TextFlow(text)
-    },
+    new TextFlow(
+        new Text {
+            text =
+              if (att.fromOffset == att.toOffset) "N/A"
+              else s"${att.fromPos} to ${att.toPos}"
+            font = defaultFont(1)
+        }
+    ),
     1,
     1
   )

@@ -7,6 +7,7 @@ package parsley.debugger.frontend.internal
 
 import javafx.event.EventHandler
 import javafx.scene.input.MouseEvent
+import javafx.scene.layout
 import parsley.debugger.DebugTree
 import parsley.debugger.frontend.internal.Defaults.*
 import parsley.debugger.frontend.internal.TreeDisplay.mkTree
@@ -24,6 +25,7 @@ import scalafx.scene.text.{FontWeight, Text}
 import scalafx.scene.transform.Scale
 
 import scala.collection.mutable
+import scalafx.beans.binding.ObjectBinding
 
 private[frontend] class TreeDisplay(
   outer: Scene,
@@ -204,9 +206,11 @@ private[frontend] object TreeDisplay {
       foldHandler.handle(event)
     }
 
-    rootNode.border <== when(unfolded) choose Border.Empty otherwise simpleBorder(
+    // don't ask... apparently Scala 3 thinks this type is different...
+    val rootBorder: ObjectBinding[layout.Border] = when(unfolded) choose Border.Empty otherwise simpleBorder(
       BorderStrokeStyle.Dotted
     )
+    rootNode.border <== rootBorder
 
     // Check if the renamed parser matches its internal name.
     // If it does, return as usual.
@@ -290,9 +294,11 @@ private[frontend] object TreeDisplay {
         }
       }
 
-      whiteBox.border <== when(nameUnfolded) choose Border.Empty otherwise simpleBorder(
+      // don't ask... apparently Scala 3 thinks this type is different...
+      val whiteBoxBorder: ObjectBinding[layout.Border] = when(nameUnfolded) choose Border.Empty otherwise simpleBorder(
         BorderStrokeStyle.Dotted
       )
+      whiteBox.border <== whiteBoxBorder
 
       panel
     }
