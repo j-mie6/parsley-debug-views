@@ -38,14 +38,14 @@ The different views work on different platforms:
 | -------- | ------------------ | ------------------ | ------------------- |
 | 2.12     | :x:                | :x:                | :x:                 |
 | 2.13     | :heavy_check_mark: | :heavy_check_mark: | :x:                 |
-| 3.0      | :heavy_check_mark: | :heavy_check_mark: | :X:                 |
+| 3.0      | :heavy_check_mark: | :heavy_check_mark: | :x:                 |
 
 ### `FxGUI` (`parsley-debug-sfx`)
 | Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
 | -------- | ------------------ | ------------------ | ------------------- |
 | 2.12     | :x:                | :x:                | :x:                 |
 | 2.13     | :heavy_check_mark: | :x:                | :x:                 |
-| 3.0      | :heavy_check_mark: | :x:                | :X:                 |
+| 3.0      | :heavy_check_mark: | :x:                | :x:                 |
 
 Scala Native 0.5 support would be available for `parsley-debug-http` when `http4s`
 has support. 2.12 support for all three new views will be supported in future too.
