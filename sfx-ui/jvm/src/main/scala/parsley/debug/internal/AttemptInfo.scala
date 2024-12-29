@@ -74,7 +74,7 @@ private [debug] class Attempt(att: ParseAttempt)(implicit fontMult: Double) exte
           val untilLB  = att.rawInput.takeWhile(!"\r\n".contains(_))
           val addition = if (att.rawInput.length > untilLB.length) " [...]" else ""
 
-          s"\"${untilLB + addition}\""
+          s"""\"${untilLB + addition}\""""
         }
         font = monoFont(1, FontWeight.Bold)
       }

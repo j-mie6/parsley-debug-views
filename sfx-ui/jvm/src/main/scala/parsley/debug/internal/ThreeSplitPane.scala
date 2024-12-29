@@ -5,7 +5,6 @@
  */
 package parsley.debug.internal
 
-import org.typelevel.scalaccompat.annotation.unused
 import parsley.debug.internal.Defaults.*
 import scalafx.geometry.Orientation
 import scalafx.scene.{Node, Scene}
@@ -42,7 +41,7 @@ private [debug] class ThreeSplitPane(
     val currentDiv = (1 - dividers.head.getPosition) * ov.doubleValue()
     val newDiv     = 1 - (currentDiv / nv.doubleValue())
 
-    val _ = dividers.collectFirst(_.setPosition(newDiv)): @unused
+    dividers.headOption.foreach(_.setPosition(newDiv))
   }
 
   outer.height.addListener { (_, ov, nv) =>
@@ -50,12 +49,12 @@ private [debug] class ThreeSplitPane(
     val currentDiv = innerPane.dividers.head.getPosition * ov.doubleValue()
     val newDiv     = currentDiv / nv.doubleValue()
 
-    val _ = innerPane.dividers.collectFirst(_.setPosition(newDiv)): @unused
+    innerPane.dividers.headOption.foreach(_.setPosition(newDiv))
   }
 
   // Set the initial starting locations of the splits.
-  dividers.collectFirst(_.setPosition(defaultPositions._1))
-  innerPane.dividers.collectFirst(_.setPosition(defaultPositions._2))
+  dividers.headOption.foreach(_.setPosition(defaultPositions._1))
+  innerPane.dividers.headOption.foreach(_.setPosition(defaultPositions._2))
 
   // Other miscellaneous properties.
   background = DefaultBackground
