@@ -16,6 +16,40 @@ Each sub-project contains one view, currently:
 After adding one of these projects as a dependency, use one of the `attach` combinators in `parsley.debug.combinators` to make a parser render the debugging output with the given view. You can find the views within the package `parsley.debug`.
 Currently, these views only support `parsley::5.0.0-M9` and above.
 
+## Supported Configurations
+The different views work on different platforms:
+
+### `PrintView` (`parsley-debug`)
+| Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
+| -------- | ------------------ | ------------------ | ------------------- |
+| 2.12     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+| 2.13     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+| 3.0      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+
+### `JsonFormatter` (`parsley-debug-json`)
+| Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
+| -------- | ------------------ | ------------------ | ------------------- |
+| 2.12     | :x:                | :x:                | :x:                 |
+| 2.13     | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+| 3.0      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+
+### `WebView` (`parsley-debug-http`)
+| Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
+| -------- | ------------------ | ------------------ | ------------------- |
+| 2.12     | :x:                | :x:                | :x:                 |
+| 2.13     | :heavy_check_mark: | :heavy_check_mark: | :x:                 |
+| 3.0      | :heavy_check_mark: | :heavy_check_mark: | :X:                 |
+
+### `FxGUI` (`parsley-debug-sfx`)
+| Version  | Scala (JDK8+)      | Scala.js (1.16+)   | Scala Native (0.5+) |
+| -------- | ------------------ | ------------------ | ------------------- |
+| 2.12     | :x:                | :x:                | :x:                 |
+| 2.13     | :heavy_check_mark: | :x:                | :x:                 |
+| 3.0      | :heavy_check_mark: | :x:                | :X:                 |
+
+Scala Native 0.5 support would be available for `parsley-debug-http` when `http4s`
+has support. 2.12 support for all three new views will be supported in future too.
+
 ## Example
 
 Assuming you have `parsley-debug-sfx` in your dependencies, this is a small example in debugging an arithmetic parser (with either `-experimental` for Scala 3 or `-Ymacro-annotations` for Scala 2.13):
