@@ -77,7 +77,7 @@ lazy val sfxUi = project
   .settings(
     commonSettings,
     name := "parsley-debug-sfx",
-    libraryDependencies += "org.scalafx" %%% "scalafx" % scalafxVersion
+    libraryDependencies += "org.scalafx" %%% "scalafx" % scalafxVersion,
   )
 
 // native is out for http4s, because it doesn't support 0.5 yet...
