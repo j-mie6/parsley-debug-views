@@ -167,7 +167,7 @@ private [debug] object TreeDisplay {
 
     // ... then get all the rectangles of the child nodes.
     treeGrid.add(rootNode, 0, 0, Math.max(columns, 1), 1)
-    for ((pane, ix) <- dtree.nodeChildren.values.map(mkTree(_, selected)).zipWithIndex) {
+    for ((pane, ix) <- dtree.nodeChildren.map(mkTree(_, selected)).zipWithIndex) {
       treeGrid.add(pane, ix, 1)
     }
 

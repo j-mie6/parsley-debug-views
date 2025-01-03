@@ -70,6 +70,6 @@ private [debug] object CJson {
           s"${dt.internalName}${if (dt.childNumber.isDefined) s" (${dt.childNumber.get})" else ""}"
       ).toJSON,
       "attempt"  -> dt.parseResults.toJSON,
-      "children" -> Json.arr(dt.nodeChildren.map { case (_, t) => dtToJSON(t) }.toVector*)
+      "children" -> Json.arr(dt.nodeChildren.map(dtToJSON).toVector*)
     ).asJson
 }

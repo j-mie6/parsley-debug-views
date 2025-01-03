@@ -71,7 +71,7 @@ private [debug] object ToHTML {
                   <table class="children">
                     <tr>
                       {
-                        dt.nodeChildren.iterator.map { case (_, p) =>
+                        dt.nodeChildren.iterator.map { p =>
                           val uuid = nextUid()
 
                           funcTable +=

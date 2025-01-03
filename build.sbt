@@ -6,7 +6,7 @@ val Java17 = JavaSpec.temurin("17")
 val Java21 = JavaSpec.temurin("21")
 
 val mainBranch = "master"
-val baseParsleyVersion = "5.0.0-M9"
+val baseParsleyVersion = "5.0-74d27a2-SNAPSHOT"
 val circeVersion = "0.14.10"
 val scalatestVersion = "3.2.19"
 // Here's hoping the stable version of Http4S works fine!
@@ -46,6 +46,7 @@ lazy val commonSettings = Seq(
   headerLicenseStyle := HeaderLicenseStyle.SpdxSyntax,
   headerEmptyLine := false,
   resolvers ++= Opts.resolver.sonatypeOssReleases, // Will speed up MiMA during fast back-to-back releases
+  resolvers ++= Opts.resolver.sonatypeOssSnapshots, // needed during flux periods
 
   libraryDependencies ++= Seq(
     "com.github.j-mie6" %%% "parsley"       % baseParsleyVersion,
