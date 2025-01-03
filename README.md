@@ -14,7 +14,11 @@ Each sub-project contains one view, currently:
 <!-- - `parsley-debug-http` (@ `http-server`): A [http4s](https://http4s.org/) web server providing a semi-interactive parse tree viewer. The main class is `WebView`, but there is a helper object for people who are not interested in `cats` or `cats-effect`, `WebViewUnsafeIO`.-->
 
 After adding one of these projects as a dependency, use one of the `attach` combinators in `parsley.debug.combinators` to make a parser render the debugging output with the given view. You can find the views within the package `parsley.debug`.
-Currently, these views only support `parsley::5.0.0-M9` and above.
+Currently, these views support:
+
+| Version    | `parsley-debug` |
+| ---------- | --------------- |
+| `0.1.0-M1` | `5.0.0-M9`      |
 
 ## Supported Configurations
 The different views work on different platforms:
