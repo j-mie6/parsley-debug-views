@@ -9,9 +9,7 @@ package parsley.debug
 
 import parsley.debug.DebugView
 
-import sttp.client3.basicRequest
-// import sttp.client3.circe.asJson
-// import sttp.client3.circe._
+import sttp.client3._
 
 /** The RemoteView HTTP module allows the parsley debug tree to be passed off to a server through a specified port on
   * local host. This enables all of the debug tree parsing, serving and graphics to be done in a separate process, and
@@ -20,24 +18,35 @@ import sttp.client3.basicRequest
   * This module is part of the Debugging Interactively in parsLey Library (DILL) project,
   * (https://github.com/j-mie6/parsley-debug-app).
   * 
-  * RemoteView uses the STTP library to create HTTP requests to a port on local host, and CIRCE to format the body of 
-  * requests into JSON.
+  * RemoteView uses the STTP library to create HTTP requests to a port on localhost.
   */
 sealed trait RemoteView extends DebugView.Reusable {
   implicit protected val port: Integer
 
   override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
-    val endPoint: sttp.model.Uri = sttp.model.Uri("http://localhost:" + port.toString() + "/remote")
+    // Create localhost endpoint using port
+    val endPoint: String = "http://127.0.0.1:" + port.toString() + "/remote"
 
-    // val requestPayload = RequestPayload(Map[String, String]("input" -> input, "tree" -> tree))
+    // Transform debug tree to string here
+    val possibleChildNumber = tree.childNumber.map(", " + _.toString).getOrElse("")
+    val hasSuccess          = tree.parseResults.exists(_.success)
+    val debugTree = s"DebugTree { name: ${tree.parserName} (${tree.internalName}$possibleChildNumber), success: $hasSuccess }"
 
-    // val response: Identity[Response[Either[ResponseException[String, io.circe.Error], ResponsePayload]]] =
+    // Format payload as JSON
+    val payload: String = "{\"input\": \"" + input + "\", \"tree\": \"" + debugTree + "\"}"
+
+    println("Sending Debug Tree to Server")
+
+    // Send POST
+    val backend = HttpURLConnectionBackend()
     val r = basicRequest
       .header("User-Agent", "remoteView")
       .contentType("application/json")
-      .body("Hello, World!")
-      // .body(asJson[RequestPayload])
-      .post(endPoint)
+      .body(payload)
+      .post(uri"$endPoint")
+      .send(backend)
+
+    println("Done!")
   }
 }
 

@@ -119,12 +119,13 @@ lazy val unidocs = project
   )
 
 lazy val remoteView = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
   .in(file("remote-view"))
   .settings(
     commonSettings,
     name := "parsley-debug-remote",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client3" %% "core" % "3.10.2",
-
+      "com.softwaremill.sttp.client3" %% "core" % "3.10.2"
     )
   )
