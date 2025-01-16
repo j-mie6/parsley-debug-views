@@ -11,5 +11,3 @@ import parsley.debug.combinator.*
 import parsley.debug.DillRemoteView
 
 ('h' ~> ("ello" | "i") ~> " world!").attach(DillRemoteView()).parse("hello world!")
-
-// char('a').char('b').attach(DillRemoteView()).parse("ab")

@@ -20,6 +20,8 @@ import scala.concurrent.duration._
   * (https://github.com/j-mie6/parsley-debug-app).
   * 
   * RemoteView uses the STTP library to create HTTP requests to a specified IP address, over a specified port.
+  * The request is formatted using the upickle JSON formatting library, it is being used over other
+  * libraries like circe for its improved speed over large data structures.
   */
 sealed trait RemoteView extends DebugView.Reusable {
   implicit protected val port: Integer
