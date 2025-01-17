@@ -40,12 +40,6 @@ private object DebugTreeInstance {
 /**
   * The Debug Tree Serialiser contains methods for transforming the parsley.debug.DebugTree to a
   * JSON stream.
-  * 
-  * Methods 
-  * 
-  * - writeJSON(file: Writer, tree: DebugTree): Unit
-  * 
-  * - toJSON(tree: DebugTree): String
   */
 object DebugTreeSerialiser {
 
