@@ -31,10 +31,10 @@ import upickle.default.{ReadWriter => RW, macroRW}
   * @param input The input string passed to the parser.
   * @param children An array of child nodes.
   */
-private case class DebugTreeInstance(name: String, internal: String, success: Boolean, number: Long, input: String, children: List[DebugTreeInstance])
+private case class SerialisableDebugTree(name: String, internal: String, success: Boolean, number: Long, input: String, children: List[SerialisableDebugTree])
 
-private object DebugTreeInstance {
-  implicit val rw: RW[DebugTreeInstance] = macroRW
+private object SerialisableDebugTree {
+  implicit val rw: RW[SerialisableDebugTree] = macroRW
 }
 
 /**
@@ -43,9 +43,9 @@ private object DebugTreeInstance {
   */
 object DebugTreeSerialiser {
 
-  private def constructDebugTree(tree: DebugTree): DebugTreeInstance = {
-    val children: List[DebugTreeInstance] = tree.nodeChildren.map(constructDebugTree(_))
-    DebugTreeInstance(tree.parserName, tree.internalName, tree.parseResults.exists(_.success), tree.childNumber.getOrElse(0), tree.fullInput, children)
+  private def convertDebugTree(tree: DebugTree): SerialisableDebugTree = {
+    val children: List[SerialisableDebugTree] = tree.nodeChildren.map(convertDebugTree(_))
+    SerialisableDebugTree(tree.parserName, tree.internalName, tree.parseResults.exists(_.success), tree.childNumber.getOrElse(0), tree.fullInput, children)
   }
 
   /**
@@ -55,7 +55,7 @@ object DebugTreeSerialiser {
     * @param tree The DebugTree.
     */
   def writeJSON(file: Writer, tree: DebugTree): Unit = {
-    val treeRoot: DebugTreeInstance = this.constructDebugTree(tree)
+    val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
     upickle.default.writeTo(treeRoot, file)
   }
 
@@ -66,7 +66,7 @@ object DebugTreeSerialiser {
     * @return JSON formatted String
     */
   def toJSON(tree: DebugTree): String = {
-    val treeRoot: DebugTreeInstance = this.constructDebugTree(tree)
+    val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
     upickle.default.write(treeRoot)
   }
 }

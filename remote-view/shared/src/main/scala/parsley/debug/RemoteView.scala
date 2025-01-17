@@ -7,10 +7,10 @@ package parsley.debug
 
 import parsley.debug.internal.DebugTreeSerialiser
 
-import sttp.client3._
+import sttp.client3.*
 
 import scala.util.Try
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 /** The RemoteView HTTP module allows the parsley debug tree to be passed off to a server through a specified port on
   * local host (by default) or to a specified IP address. This enables all of the debug tree parsing, serving and 
