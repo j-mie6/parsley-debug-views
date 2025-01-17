@@ -27,8 +27,6 @@ sealed trait RemoteView extends DebugView.Reusable {
   implicit protected val port: Integer
   implicit protected val address: String
 
-  // val TEMP_FILE_PATH: String = "./.temp_debug_output.json"
-
   /**
     * Send the debug tree and input to the port and address specified in the 
     * object construction. 

@@ -13,7 +13,7 @@ import upickle.default.{ReadWriter => RW, macroRW}
 /**
   * Case class instance of the DebugTree structure.
   * 
-  * This will be serialised by upickle to JSON structures of the form -
+  * This will be serialised by upickle to JSON structures of the following form.
   * 
   * {
   *   name      : String
