@@ -40,7 +40,7 @@ inThisBuild(List(
   //tlSitePublishBranch := Some(mainBranch),
 ))
 
-lazy val root = tlCrossRootProject.aggregate(jsonInfo, sfxUi/*, http4sServer*/, unidocs)
+lazy val root = tlCrossRootProject.aggregate(remoteView, jsonInfo, sfxUi/*, http4sServer*/, unidocs)
 
 lazy val commonSettings = Seq(
   headerLicenseStyle := HeaderLicenseStyle.SpdxSyntax,
@@ -117,3 +117,17 @@ lazy val unidocs = project
     name := "parsley-debug-view-docs",
     ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(jsonInfo.jvm, sfxUi/*, http4sServer*/),
   )
+
+lazy val remoteView = crossProject(JVMPlatform, JSPlatform, NativePlatform)
+  .withoutSuffixFor(JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("remote-view"))
+  .settings(
+    commonSettings,
+    name := "parsley-debug-remote",
+    libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.client3" %% "core" % "3.10.2",
+      "com.lihaoyi" %% "upickle" % "4.1.0" 
+    )
+  )
+  
