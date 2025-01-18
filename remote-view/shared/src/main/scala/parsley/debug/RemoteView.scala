@@ -68,10 +68,10 @@ sealed trait RemoteView extends DebugView.Reusable {
       .send(backend)
 
     response match {
-      case Failure(exception) => println(s"${TextToRed}Remote View request failed! Please validate address ($address) and port number ($port).${TextToNormal}\n\tError : ${exception.toString()}")
-      case Success(value) => value.body match {
+      case Failure(exception) => println(s"${TextToRed}Remote View request failed! Please validate address ($address) and port number ($port).${TextToNormal}\n\tError : ${exception.toString}")
+      case Success(res) => res.body match {
         // Left indicates the request is successful, but the response code was not 2xx.
-        case Left(errorMessage) => println(s"${TextToRed}Request Failed with message : $errorMessage, and status code : ${value.code}${TextToNormal}")
+        case Left(errorMessage) => println(s"${TextToRed}Request Failed with message : $errorMessage, and status code : ${res.code}${TextToNormal}")
         // Right indicates a successful request with 2xx response code.
         case Right(body) => println(s"Request successful with message : $body")
       }
@@ -97,7 +97,7 @@ object RemoteView extends DebugView.Reusable with RemoteView {
       // Check that every number is a number
       val numberStrings: Array[String] = address.split('.')
       val addrNumValid: Boolean = numberStrings.forall((number: String) => number.length > 0 && {
-          number.toIntOption match {
+          Try(number.toInt).toOption match {
             case None => false
             case Some(number) => number >= 0x0 && number <= 0xFF
           }
@@ -112,15 +112,15 @@ object RemoteView extends DebugView.Reusable with RemoteView {
       require(userPort <= MaxUserPort, s"Remote View port invalid : $userPort > $MaxUserPort")
       require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
 
-      override implicit val port = userPort
-      override implicit val address = userAddress
+      override protected val port = userPort
+      override protected val address = userAddress
     }
 }
 
 /** Helper object for connecting to the DILL backend. */
 object DillRemoteView extends DebugView.Reusable with RemoteView {
-  // Default endpoint for DILL backend is port 0x444C ("DL") on localhost
-  override protected val port: Int = 0x444C
+  // Default endpoint for DILL backend is port 17484 ("DL") on localhost
+  override protected val port: Int = 17484
   override protected val address: String = "127.0.0.1"
 
   /** Create a new instance of [[RemoteView]] with default ports for the DILL backend server. */
