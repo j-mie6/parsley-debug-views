@@ -38,8 +38,9 @@ sealed trait RemoteView extends DebugView.Reusable {
   private [debug] final val ConnectionTimeout: FiniteDuration = 30.second
   private [debug] final val ResponseTimeout: FiniteDuration = 10.second
 
+  // Endpoint for post request
   private [debug] final lazy val endPoint: Uri = uri"http://$address:$port/api/remote"
-  
+
   /**
    * Send the debug tree and input to the port and address specified in the 
    * object construction. 
@@ -48,7 +49,6 @@ sealed trait RemoteView extends DebugView.Reusable {
    * @param tree The debug tree.
    */
   override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
-    // Endpoint for post request
     // JSON formatted payload for post request
     val payload: String = DebugTreeSerialiser.toJSON(input, tree)
     
