@@ -37,6 +37,12 @@ private object SerialisableDebugTree {
   implicit val rw: RW[SerialisableDebugTree] = macroRW
 }
 
+private case class SerialisablePayload(input: String, tree: SerialisableDebugTree)
+
+private object SerialisablePayload {
+  implicit val rw: RW[SerialisablePayload] = macroRW
+}
+
 /**
   * The Debug Tree Serialiser contains methods for transforming the parsley.debug.DebugTree to a
   * JSON stream.
@@ -54,9 +60,9 @@ object DebugTreeSerialiser {
     * @param file A valid writer object.
     * @param tree The DebugTree.
     */
-  def writeJSON(file: Writer, tree: DebugTree): Unit = {
+  def writeJSON(file: Writer, input: String, tree: DebugTree): Unit = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    upickle.default.writeTo(treeRoot, file)
+    upickle.default.writeTo(SerialisablePayload(input, treeRoot), file)
   }
 
   /**
@@ -65,8 +71,8 @@ object DebugTreeSerialiser {
     * @param tree The DebugTree
     * @return JSON formatted String
     */
-  def toJSON(tree: DebugTree): String = {
+  def toJSON(input: String, tree: DebugTree): String = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    upickle.default.write(treeRoot)
+    upickle.default.write(SerialisablePayload(input, treeRoot))
   }
 }

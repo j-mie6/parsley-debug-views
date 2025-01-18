@@ -39,10 +39,6 @@ sealed trait RemoteView extends DebugView.Reusable {
   private [debug] final val ConnectionTimeout: FiniteDuration = 30.second
   private [debug] final val ResponseTimeout: FiniteDuration = 10.second
 
-  // Endpoint for post request
-  private [debug] final val endPoint: Uri = uri"http://$address:$port/api/remote"
-
-  
   /**
    * Send the debug tree and input to the port and address specified in the 
    * object construction. 
@@ -51,8 +47,10 @@ sealed trait RemoteView extends DebugView.Reusable {
    * @param tree The debug tree.
    */
   override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
+    // Endpoint for post request
+    val endPoint: Uri = uri"http://$address:$port/api/remote"
     // JSON formatted payload for post request
-    val payload: String = s"{\"input\":\"$input\",\"tree\":${DebugTreeSerialiser.toJSON(tree)}}"
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree)
     
     // Send POST
     println("Sending Debug Tree to Server")
@@ -93,12 +91,18 @@ object RemoteView extends DebugView.Reusable with RemoteView {
 
     /** Do some basic validations for a given IP address. */
     private def checkIp(address: String): Boolean = {
-      val addrLenValid: Boolean = address.length < MinimalIpLength || address.length > MaximalIpLength
-      val addrDotValid: Boolean = address.count(_ == '.') != 3
+      val addrLenValid: Boolean = address.length >= MinimalIpLength && address.length <= MaximalIpLength
+      val addrDotValid: Boolean = address.count(_ == '.') == 3
       
       // Check that every number is a number
       val numberStrings: Array[String] = address.split('.')
-      val addrNumValid: Boolean = numberStrings.forall((number: String) => number.length > 0 && number.toIntOption.nonEmpty)
+      val addrNumValid: Boolean = numberStrings.forall((number: String) => number.length > 0 && {
+          number.toIntOption match {
+            case None => false
+            case Some(number) => number >= 0x0 && number <= 0xFF
+          }
+        }
+      )
 
       addrLenValid && addrDotValid && addrNumValid 
     }
@@ -115,10 +119,10 @@ object RemoteView extends DebugView.Reusable with RemoteView {
 
 /** Helper object for connecting to the DILL backend. */
 object DillRemoteView extends DebugView.Reusable with RemoteView {
-  // Default endpoint for DILL backend is port 5173 on localhost
-  override protected val port: Int = 5173
+  // Default endpoint for DILL backend is port 0x444C ("DL") on localhost
+  override protected val port: Int = 0x444C
   override protected val address: String = "127.0.0.1"
 
   /** Create a new instance of [[RemoteView]] with default ports for the DILL backend server. */
-  def apply(): RemoteView = RemoteView(port, address)
+  def apply(userAddress: String = address): RemoteView = RemoteView(port, userAddress)
 }
