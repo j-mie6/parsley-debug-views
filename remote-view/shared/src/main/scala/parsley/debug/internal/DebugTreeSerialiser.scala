@@ -6,6 +6,7 @@
 package parsley.debug.internal
 
 import parsley.debug.DebugTree
+
 import java.io.Writer
 
 import upickle.default.{ReadWriter => RW, macroRW}

@@ -8,10 +8,9 @@ package parsley.debug
 import parsley.debug.internal.DebugTreeSerialiser
 
 import sttp.client3.*
-
-// import scala.util.Try
-import scala.concurrent.duration.*
 import sttp.model.Uri
+
+import scala.concurrent.duration.*
 import scala.util.Try
 import scala.util.Failure
 import scala.util.Success
