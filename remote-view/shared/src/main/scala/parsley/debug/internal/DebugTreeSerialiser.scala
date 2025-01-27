@@ -5,11 +5,11 @@
  */
 package parsley.debug.internal
 
-import parsley.debug.DebugTree
-
 import java.io.Writer
 
 import upickle.default.{ReadWriter => RW, macroRW}
+
+import parsley.debug.DebugTree
 import parsley.debug.ParseAttempt
 
 /**
