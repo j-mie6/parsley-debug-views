@@ -43,7 +43,7 @@ private object SerialisableDebugTree {
   implicit val rw: RW[SerialisableDebugTree] = macroRW
 }
 
-private case class SerialisablePayload(input: String, tree: SerialisableDebugTree)
+private case class SerialisablePayload(input: String, root: SerialisableDebugTree)
 
 private object SerialisablePayload {
   implicit val rw: RW[SerialisablePayload] = macroRW
