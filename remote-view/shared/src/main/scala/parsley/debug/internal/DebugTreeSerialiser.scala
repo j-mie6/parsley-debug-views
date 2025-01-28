@@ -37,7 +37,7 @@ import parsley.debug.ParseAttempt
   * @param input The input string passed to the parser.
   * @param children An array of child nodes.
   */
-private case class SerialisableDebugTree(name: String, internal: String, success: Boolean, child_id: Long, from_offset: ParseAttempt.Offset, to_offset: ParseAttempt.Offset, children: List[SerialisableDebugTree])
+private case class SerialisableDebugTree(name: String, internal: String, success: Boolean, childId: Long, fromOffset: ParseAttempt.Offset, toOffset: ParseAttempt.Offset, children: List[SerialisableDebugTree])
 
 private object SerialisableDebugTree {
   implicit val rw: RW[SerialisableDebugTree] = macroRW
