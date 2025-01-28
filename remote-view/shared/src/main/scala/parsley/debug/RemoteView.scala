@@ -5,15 +5,15 @@
  */
 package parsley.debug
 
-import parsley.debug.internal.DebugTreeSerialiser
+import scala.concurrent.duration.*
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 import sttp.client3.*
 import sttp.model.Uri
 
-import scala.concurrent.duration.*
-import scala.util.Try
-import scala.util.Failure
-import scala.util.Success
+import parsley.debug.internal.DebugTreeSerialiser
 
 /** The RemoteView HTTP module allows the parsley debug tree to be passed off to a server through a specified port on
   * local host (by default) or to a specified IP address. This enables all of the debug tree parsing, serving and 
@@ -39,7 +39,7 @@ sealed trait RemoteView extends DebugView.Reusable {
   private [debug] final val ResponseTimeout: FiniteDuration = 10.second
 
   // Endpoint for post request
-  private [debug] final lazy val endPoint: Uri = uri"http://$address:$port/api/remote"
+  private [debug] final lazy val endPoint: Uri = uri"http://$address:$port/api/remote/tree"
 
   /**
    * Send the debug tree and input to the port and address specified in the 
