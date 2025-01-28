@@ -21,9 +21,9 @@ import parsley.debug.ParseAttempt
   *   name        : String
   *   internal    : String
   *   success     : Boolean
-  *   child_id    : Long
-  *   from_offset : Int
-  *   to_offset   : Int
+  *   childId    : Long
+  *   fromOffset : Int
+  *   toOffset   : Int
   *   input       : String
   *   children    : [DebugTree]
   * }
@@ -31,9 +31,9 @@ import parsley.debug.ParseAttempt
   * @param name (Possibly) User defined name.
   * @param internal Internal parser name.
   * @param success Did the parser succeed.
-  * @param child_id The unique child number of this node.
-  * @param from_offset Offset into the input in which this node's parse attempt starts.
-  * @param to_offset Offset into the input in which this node's parse attempt finished.
+  * @param childId The unique child number of this node.
+  * @param fromOffset Offset into the input in which this node's parse attempt starts.
+  * @param toOffset Offset into the input in which this node's parse attempt finished.
   * @param input The input string passed to the parser.
   * @param children An array of child nodes.
   */
