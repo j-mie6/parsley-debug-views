@@ -25,7 +25,8 @@ inThisBuild(List(
   licenses := List("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause")),
   developers := List(
     tlGitHubDev("j-mie6", "Jamie Willis"),
-    tlGitHubDev("mf42-dzh", "Fawwaz Abdullah")
+    tlGitHubDev("mf42-dzh", "Fawwaz Abdullah"),
+    tlGitHubDev("Riley-horrix", "Riley Horrix")
   ),
   versionScheme := Some("early-semver"),
   crossScalaVersions := Seq(Scala213, Scala212, Scala3),

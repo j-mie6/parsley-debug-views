@@ -26,7 +26,7 @@ import parsley.debug.internal.DebugTreeSerialiser
   * The request is formatted using the upickle JSON formatting library, it is being used over other
   * libraries like circe for its improved speed over large data structures.
   */
-sealed trait RemoteView extends DebugView.Reusable {
+sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
   protected val port: Int
   protected val address: String
 
@@ -37,6 +37,7 @@ sealed trait RemoteView extends DebugView.Reusable {
   // Request Timeouts
   private [debug] final val ConnectionTimeout: FiniteDuration = 30.second
   private [debug] final val ResponseTimeout: FiniteDuration = 10.second
+  private [debug] final val BreakpointTimeout: FiniteDuration = 30.minute
 
   // Endpoint for post request
   private [debug] final lazy val endPoint: Uri = uri"http://$address:$port/api/remote/tree"
@@ -48,7 +49,15 @@ sealed trait RemoteView extends DebugView.Reusable {
    * @param input The input source.
    * @param tree The debug tree.
    */
-  override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
+  override private [debug] def render(input: => String, tree: => DebugTree): Unit = 
+    renderWithTimeout(input, tree, ResponseTimeout)
+
+  override private [debug] def renderWait(input: => String, tree: => DebugTree): Int = {
+    renderWithTimeout(input, tree, BreakpointTimeout)
+    0
+  }
+
+  private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration): Unit = {
     // JSON formatted payload for post request
     val payload: String = DebugTreeSerialiser.toJSON(input, tree)
     
@@ -58,9 +67,9 @@ sealed trait RemoteView extends DebugView.Reusable {
     val backend = TryHttpURLConnectionBackend(
       options = SttpBackendOptions.connectionTimeout(ConnectionTimeout)
     )
-
+    
     val response: Try[Response[Either[String,String]]] = basicRequest
-      .readTimeout(ResponseTimeout)
+      .readTimeout(timeout)
       .header("User-Agent", "remoteView")
       .contentType("application/json")
       .body(payload)
@@ -68,7 +77,7 @@ sealed trait RemoteView extends DebugView.Reusable {
       .send(backend)
 
     response match {
-      case Failure(exception) => println(s"${TextToRed}Remote View request failed! Please validate address ($address) and port number ($port).${TextToNormal}\n\tError : ${exception.toString}")
+      case Failure(exception) => println(s"${TextToRed}Remote View request failed! Please validate address ($address) and port number ($port) and make sure the remote view app is running.${TextToNormal}\n\tError : ${exception.toString}")
       case Success(res) => res.body match {
         // Left indicates the request is successful, but the response code was not 2xx.
         case Left(errorMessage) => println(s"${TextToRed}Request Failed with message : $errorMessage, and status code : ${res.code}${TextToNormal}")
