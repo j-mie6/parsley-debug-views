@@ -16,8 +16,8 @@ import upickle.default.{ReadWriter => RW, *}
   * @param message String response message from the remote view.
   * @param skipBreakpoint How many breakpoints to skip after this breakpoint (not required).
   */
-case class RemoteViewResponse(message: String, skipBreakpoint: Option[Int] = None)
+private [internal] case class RemoteViewResponse(message: String, skipBreakpoint: Option[Int] = None)
 
-object RemoteViewResponse {
+private [internal] object RemoteViewResponse {
   implicit val rw: RW[RemoteViewResponse] = macroRW
 }
