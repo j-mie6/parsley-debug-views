@@ -10,7 +10,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-import upickle.default.{ReadWriter => RW, _}
+import upickle.default.{ReadWriter => RW, *}
 
 import sttp.client3.*
 import sttp.client3.upicklejson.*
@@ -78,10 +78,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
   override private [debug] def renderWait(input: => String, tree: => DebugTree): Int = {
     renderWithTimeout(input, tree, BreakpointTimeout) match {
       case None => DefaultBreakpointSkip
-      case Some(response) => response.skipBreakpoint match {
-        case None => DefaultBreakpointSkip
-        case Some(breakpoints) => breakpoints
-      }
+      case Some(response) => response.skipBreakpoint.getOrElse(DefaultBreakpointSkip)
     }
   }
 
