@@ -6,8 +6,7 @@ val Java17 = JavaSpec.temurin("17")
 val Java21 = JavaSpec.temurin("21")
 
 val mainBranch = "master"
-// val baseParsleyVersion = "5.0.0-M12"
-val baseParsleyVersion = "5.0-f908893-20250218T133925Z-SNAPSHOT"
+val baseParsleyVersion = "5.0.0-M12" // NEEDS TO BE NEXT VERSION WITH BREAKPOINTS
 val circeVersion = "0.14.10"
 val scalatestVersion = "3.2.19"
 // Here's hoping the stable version of Http4S works fine!
