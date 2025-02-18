@@ -27,7 +27,7 @@ inThisBuild(List(
     tlGitHubDev("j-mie6", "Jamie Willis"),
     tlGitHubDev("mf42-dzh", "Fawwaz Abdullah"),
     tlGitHubDev("Riley-horrix", "Riley Horrix"),
-    tlGitHubDev("PriyanshC", "Priyansh Chugh")
+    tlGitHubDev("PriyanshC", "Priyansh Chugh"),
   ),
   versionScheme := Some("early-semver"),
   crossScalaVersions := Seq(Scala213, Scala212, Scala3),
