@@ -1,3 +1,8 @@
+/*
+ * Copyright 2023 Parsley Debug View Contributors <https://github.com/j-mie6/parsley-debug-views/graphs/contributors>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 package parsley.debug.internal
 
 import upickle.default.{ReadWriter => RW, *}
