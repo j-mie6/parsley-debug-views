@@ -1,21 +1,18 @@
 package parsley.debug.internal
 
-import sttp.client3._
-import sttp.client3.upicklejson._
-import upickle.default._
+import upickle.default.{ReadWriter => RW, *}
 
-val backend: SttpBackend[Identity, Any] = HttpClientSyncBackend()
+/**
+  * Represents a generic response from the remote view.
+  * 
+  * By adding in the optional fields, that allows adding of arbitrary data, without
+  * breaking back compatibility.
+  *
+  * @param message String response message from the remote view.
+  * @param skipBreakpoint How many breakpoints to skip after this breakpoint (not required).
+  */
+case class RemoteViewResponse(message: String, skipBreakpoint: Option[Int] = None)
 
-implicit val requestPayloadRW: ReadWriter[RequestPayload] = macroRW[RequestPayload]
-implicit val responsePayloadRW: ReadWriter[ResponsePayload] = macroRW[ResponsePayload]
-
-val requestPayload = RequestPayload("some data")
-
-val response: Identity[Response[Either[ResponseException[String, Exception], ResponsePayload]]] =
-basicRequest
-  .post(uri"...")
-  .body(requestPayload)
-  .response(asJson[ResponsePayload])
-  .send(backend)
-
-private sealed case class RemoteViewResponse(message: String, options: RemoteViewOptions)
+object RemoteViewResponse {
+  implicit val rw: RW[RemoteViewResponse] = macroRW
+}
