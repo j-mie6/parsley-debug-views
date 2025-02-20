@@ -6,7 +6,7 @@ val Java17 = JavaSpec.temurin("17")
 val Java21 = JavaSpec.temurin("21")
 
 val mainBranch = "master"
-val baseParsleyVersion = "5.0.0-M12"
+val baseParsleyVersion = "5.0.0-M13"
 val circeVersion = "0.14.10"
 val scalatestVersion = "3.2.19"
 // Here's hoping the stable version of Http4S works fine!
@@ -25,7 +25,9 @@ inThisBuild(List(
   licenses := List("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause")),
   developers := List(
     tlGitHubDev("j-mie6", "Jamie Willis"),
-    tlGitHubDev("mf42-dzh", "Fawwaz Abdullah")
+    tlGitHubDev("mf42-dzh", "Fawwaz Abdullah"),
+    tlGitHubDev("Riley-horrix", "Riley Horrix"),
+    tlGitHubDev("PriyanshC", "Priyansh Chugh"),
   ),
   versionScheme := Some("early-semver"),
   crossScalaVersions := Seq(Scala213, Scala212, Scala3),
@@ -127,6 +129,7 @@ lazy val remoteView = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "parsley-debug-remote",
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client3" %% "core" % "3.10.2",
-      "com.lihaoyi" %% "upickle" % "4.1.0"
+      "com.softwaremill.sttp.client3" %% "upickle" % "3.10.3",
+      "com.lihaoyi" %% "upickle" % "3.3.1"
     )
   )
