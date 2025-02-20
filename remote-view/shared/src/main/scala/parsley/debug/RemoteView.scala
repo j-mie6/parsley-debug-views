@@ -67,7 +67,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
    * @param tree The debug tree.
    */
   override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
-    val _ = renderWithTimeout(input, tree, ResponseTimeout, isDebuggable = true)
+    val _ = renderWithTimeout(input, tree, ResponseTimeout)
   }
   /**
     * Send the debug tree and input to the port and address specified in the
@@ -90,7 +90,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
     * @return The number of breakpoints to skip after this breakpoint exits.
     */
   override private [debug] def renderWait(input: => String, tree: => DebugTree): Int = {
-    renderWithTimeout(input, tree, BreakpointTimeout) match {
+    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true) match {
       case None => DefaultBreakpointSkip
       case Some(response) => response.skipBreakpoint.getOrElse(DefaultBreakpointSkip)
     }
