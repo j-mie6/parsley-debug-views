@@ -43,7 +43,7 @@ private object SerialisableDebugTree {
   implicit val rw: RW[SerialisableDebugTree] = macroRW
 }
 
-private case class SerialisablePayload(input: String, root: SerialisableDebugTree)
+private case class SerialisablePayload(input: String, root: SerialisableDebugTree, isDebuggable: Boolean)
 
 private object SerialisablePayload {
   implicit val rw: RW[SerialisablePayload] = macroRW
@@ -73,9 +73,9 @@ object DebugTreeSerialiser {
     * @param file A valid writer object.
     * @param tree The DebugTree.
     */
-  def writeJSON(file: Writer, input: String, tree: DebugTree): Unit = {
+  def writeJSON(file: Writer, input: String, tree: DebugTree, isDebuggable: Boolean): Unit = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    upickle.default.writeTo(SerialisablePayload(input, treeRoot), file)
+    upickle.default.writeTo(SerialisablePayload(input, treeRoot, isDebuggable), file)
   }
 
   /**
@@ -84,8 +84,8 @@ object DebugTreeSerialiser {
     * @param tree The DebugTree
     * @return JSON formatted String
     */
-  def toJSON(input: String, tree: DebugTree): String = {
+  def toJSON(input: String, tree: DebugTree, isDebuggable: Boolean): String = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    upickle.default.write(SerialisablePayload(input, treeRoot))
+    upickle.default.write(SerialisablePayload(input, treeRoot, isDebuggable))
   }
 }
