@@ -46,6 +46,17 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
   // Endpoint for post request
   private [debug] final lazy val endPoint: Uri = uri"http://$address:$port/api/remote/tree"
 
+  /**
+    * Default number of breakpoints skipped.
+    * 
+    * This value will be returned if
+    * - RemoteView cannot connect to the specified server.
+    * - Server does not actually return a value.
+    * 
+    * -1 represents that the parser should stop immediately. This is so 
+    * that if the user is debugging infinite recursion, the lack of a valid
+    * server will not cause the user's machine to burst into flames. 
+    */
   private [debug] final val DefaultBreakpointSkip: Int = -1
 
   /**
@@ -55,9 +66,9 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
    * @param input The input source.
    * @param tree The debug tree.
    */
-  override private [debug] def render(input: => String, tree: => DebugTree): Unit = 
-    renderWithTimeout(input, tree, ResponseTimeout)
-
+  override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
+    val _ = renderWithTimeout(input, tree, ResponseTimeout)
+  }
   /**
     * Send the debug tree and input to the port and address specified in the
     * object construction.
