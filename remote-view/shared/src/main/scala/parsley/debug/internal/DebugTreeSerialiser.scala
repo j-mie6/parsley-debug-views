@@ -21,11 +21,12 @@ import parsley.debug.ParseAttempt
   *   name        : String
   *   internal    : String
   *   success     : Boolean
-  *   childId    : Long
-  *   fromOffset : Int
-  *   toOffset   : Int
+  *   childId     : Long
+  *   fromOffset  : Int
+  *   toOffset    : Int
   *   input       : String
   *   children    : [DebugTree]
+  *   isIterative : Boolean
   * }
   *
   * @param name (Possibly) User defined name.
@@ -36,8 +37,9 @@ import parsley.debug.ParseAttempt
   * @param toOffset Offset into the input in which this node's parse attempt finished.
   * @param input The input string passed to the parser.
   * @param children An array of child nodes.
+  * @param isIterative Is this parser iterative (and opaque)?
   */
-private case class SerialisableDebugTree(name: String, internal: String, success: Boolean, childId: Long, fromOffset: ParseAttempt.Offset, toOffset: ParseAttempt.Offset, children: List[SerialisableDebugTree])
+private case class SerialisableDebugTree(name: String, internal: String, success: Boolean, childId: Long, fromOffset: ParseAttempt.Offset, toOffset: ParseAttempt.Offset, children: List[SerialisableDebugTree], isIterative: Boolean)
 
 private object SerialisableDebugTree {
   implicit val rw: RW[SerialisableDebugTree] = macroRW
@@ -63,7 +65,8 @@ object DebugTreeSerialiser {
       tree.childNumber.getOrElse(-1), 
       tree.parseResults.map(_.fromOffset).getOrElse(-1),
       tree.parseResults.map(_.toOffset).getOrElse(-1),
-      children
+      children,
+      tree.isIterative
     )
   }
 
