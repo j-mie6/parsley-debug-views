@@ -6,7 +6,7 @@ val Java17 = JavaSpec.temurin("17")
 val Java21 = JavaSpec.temurin("21")
 
 val mainBranch = "master"
-val baseParsleyVersion = "5.0.0-M13"
+val baseParsleyVersion = "5.0-102bdaa-SNAPSHOT"
 val circeVersion = "0.14.10"
 val scalatestVersion = "3.2.19"
 // Here's hoping the stable version of Http4S works fine!
@@ -130,6 +130,5 @@ lazy val remoteView = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client3" %% "core" % "3.10.2",
       "com.softwaremill.sttp.client3" %% "upickle" % "3.10.3",
-      "com.lihaoyi" %% "upickle" % "3.3.1"
     )
   )

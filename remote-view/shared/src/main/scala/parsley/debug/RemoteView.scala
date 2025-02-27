@@ -57,7 +57,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
     * that if the user is debugging infinite recursion, the lack of a valid
     * server will not cause the user's machine to burst into flames. 
     */
-  private [debug] final val DefaultBreakpointSkip: Int = -1
+  private [debug] final val DefaultBreakpointSkip = -1
 
   /**
    * Send the debug tree and input to the port and address specified in the 
@@ -90,10 +90,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
     * @return The number of breakpoints to skip after this breakpoint exits.
     */
   override private [debug] def renderWait(input: => String, tree: => DebugTree): Int = {
-    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true) match {
-      case None => DefaultBreakpointSkip
-      case Some(response) => response.skipBreakpoint.getOrElse(DefaultBreakpointSkip)
-    }
+    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).flatMap(_.skipBreakpoint).getOrElse(DefaultBreakpointSkip)
   }
 
   private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false): Option[RemoteViewResponse] = {
