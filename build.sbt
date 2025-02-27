@@ -25,7 +25,9 @@ inThisBuild(List(
   licenses := List("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause")),
   developers := List(
     tlGitHubDev("j-mie6", "Jamie Willis"),
-    tlGitHubDev("mf42-dzh", "Fawwaz Abdullah")
+    tlGitHubDev("mf42-dzh", "Fawwaz Abdullah"),
+    tlGitHubDev("Riley-horrix", "Riley Horrix"),
+    tlGitHubDev("PriyanshC", "Priyansh Chugh"),
   ),
   versionScheme := Some("early-semver"),
   crossScalaVersions := Seq(Scala213, Scala212, Scala3),
@@ -126,7 +128,7 @@ lazy val remoteView = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     commonSettings,
     name := "parsley-debug-remote",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client3" %% "core" % "3.10.2",
-      "com.lihaoyi" %% "upickle" % "4.1.0"
+      "com.softwaremill.sttp.client3" %% "core" % "3.10.3",
+      "com.softwaremill.sttp.client3" %% "upickle" % "3.10.3",
     )
   )

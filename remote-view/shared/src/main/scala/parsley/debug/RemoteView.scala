@@ -10,10 +10,13 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
+import upickle.default.{ReadWriter => RW, *}
+
 import sttp.client3.*
-import sttp.model.Uri
+import sttp.client3.upicklejson.*
 
 import parsley.debug.internal.DebugTreeSerialiser
+import parsley.debug.internal.RemoteViewResponse
 
 /** The RemoteView HTTP module allows the parsley debug tree to be passed off to a server through a specified port on
   * local host (by default) or to a specified IP address. This enables all of the debug tree parsing, serving and 
@@ -26,20 +29,34 @@ import parsley.debug.internal.DebugTreeSerialiser
   * The request is formatted using the upickle JSON formatting library, it is being used over other
   * libraries like circe for its improved speed over large data structures.
   */
-sealed trait RemoteView extends DebugView.Reusable {
+sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
   protected val port: Int
   protected val address: String
 
   // Printing helpers
-  private [debug] final val TextToRed: String    = "\u001b[31m"
-  private [debug] final val TextToNormal: String = "\u001b[0m"
+  private [debug] final val TextToRed    = "\u001b[31m"
+  private [debug] final val TextToNormal = "\u001b[0m"
   
   // Request Timeouts
-  private [debug] final val ConnectionTimeout: FiniteDuration = 30.second
-  private [debug] final val ResponseTimeout: FiniteDuration = 10.second
+  private [debug] final val ConnectionTimeout = 30.second
+  private [debug] final val ResponseTimeout   = 10.second
+  private [debug] final val BreakpointTimeout = 30.minute
 
   // Endpoint for post request
-  private [debug] final lazy val endPoint: Uri = uri"http://$address:$port/api/remote/tree"
+  private [debug] final lazy val endPoint = uri"http://$address:$port/api/remote/tree"
+
+  /**
+    * Default number of breakpoints skipped.
+    * 
+    * This value will be returned if
+    * - RemoteView cannot connect to the specified server.
+    * - Server does not actually return a value.
+    * 
+    * -1 represents that the parser should stop immediately. This is so 
+    * that if the user is debugging infinite recursion, the lack of a valid
+    * server will not cause the user's machine to burst into flames. 
+    */
+  private [debug] final val DefaultBreakpointSkip = -1
 
   /**
    * Send the debug tree and input to the port and address specified in the 
@@ -49,31 +66,71 @@ sealed trait RemoteView extends DebugView.Reusable {
    * @param tree The debug tree.
    */
   override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
+    // Return value of the renderWithTimeout function not needed for a regular parse
+    val _ = renderWithTimeout(input, tree, ResponseTimeout)
+  }
+  /**
+    * Send the debug tree and input to the port and address specified in the
+    * object construction.
+    * 
+    * This function will block and wait for a response from the remote view.
+    * This is to allow breakpoints to halt Parsley parsing and wait for a 
+    * number of breakpoints to skip.
+    * 
+    * The number of breakpoints to skip represents:
+    *   n == 0  : Move through the current breakpoint and halt on the next.
+    *   n >= 1  : Move through the current breakpoint and skip the next n breakpoints.
+    *   n <= -1 : Stop the parser and exit the program.
+    *
+    * @param input The input source.
+    * @param tree The debug tree.
+    * @param timeout The maximal timeout of the connection.
+    * @param isDebuggable If the instance is a debuggable instance.
+    * 
+    * @return The number of breakpoints to skip after this breakpoint exits.
+    */
+  override private [debug] def renderWait(input: => String, tree: => DebugTree): Int =
+    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).flatMap(_.skipBreakpoint).getOrElse(DefaultBreakpointSkip)
+
+  private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
-    val payload: String = DebugTreeSerialiser.toJSON(input, tree)
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree, isDebuggable)
     
     // Send POST
     println("Sending Debug Tree to Server")
+
+    // Implicit JSON deserialiser
+    implicit val responsePayloadRW: RW[RemoteViewResponse] = macroRW[RemoteViewResponse]
     
     val backend = TryHttpURLConnectionBackend(
       options = SttpBackendOptions.connectionTimeout(ConnectionTimeout)
     )
-
-    val response: Try[Response[Either[String,String]]] = basicRequest
-      .readTimeout(ResponseTimeout)
+    
+    val response: Try[Response[Either[ResponseException[String, Exception], RemoteViewResponse]]] = basicRequest
+      .readTimeout(timeout)
       .header("User-Agent", "remoteView")
       .contentType("application/json")
       .body(payload)
       .post(endPoint)
+      .response(asJson[RemoteViewResponse])
       .send(backend)
 
     response match {
-      case Failure(exception) => println(s"${TextToRed}Remote View request failed! Please validate address ($address) and port number ($port).${TextToNormal}\n\tError : ${exception.toString}")
+      case Failure(exception) => {
+        println(s"${TextToRed}Remote View request failed! Please validate address ($address) and port number ($port) and make sure the remote view app is running.${TextToNormal}\n\tError : ${exception.toString}")
+        None
+      }
       case Success(res) => res.body match {
         // Left indicates the request is successful, but the response code was not 2xx.
-        case Left(errorMessage) => println(s"${TextToRed}Request Failed with message : $errorMessage, and status code : ${res.code}${TextToNormal}")
+        case Left(errorMessage) => {
+          println(s"${TextToRed}Request Failed with message : $errorMessage, and status code : ${res.code}${TextToNormal}")
+          None
+        }
         // Right indicates a successful request with 2xx response code.
-        case Right(body) => println(s"Request successful with message : $body")
+        case Right(remoteViewResp) => {
+          println(s"Request successful with message : ${remoteViewResp.message}")
+          Some(remoteViewResp)
+        }
       }
     }
   }
