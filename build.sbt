@@ -128,7 +128,7 @@ lazy val remoteView = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     commonSettings,
     name := "parsley-debug-remote",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client3" %% "core" % "3.10.2",
+      "com.softwaremill.sttp.client3" %% "core" % "3.10.3",
       "com.softwaremill.sttp.client3" %% "upickle" % "3.10.3",
     )
   )

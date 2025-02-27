@@ -14,7 +14,6 @@ import upickle.default.{ReadWriter => RW, *}
 
 import sttp.client3.*
 import sttp.client3.upicklejson.*
-import sttp.model.Uri
 
 import parsley.debug.internal.DebugTreeSerialiser
 import parsley.debug.internal.RemoteViewResponse
@@ -35,16 +34,16 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
   protected val address: String
 
   // Printing helpers
-  private [debug] final val TextToRed: String    = "\u001b[31m"
-  private [debug] final val TextToNormal: String = "\u001b[0m"
+  private [debug] final val TextToRed    = "\u001b[31m"
+  private [debug] final val TextToNormal = "\u001b[0m"
   
   // Request Timeouts
-  private [debug] final val ConnectionTimeout: FiniteDuration = 30.second
-  private [debug] final val ResponseTimeout: FiniteDuration = 10.second
-  private [debug] final val BreakpointTimeout: FiniteDuration = 30.minute
+  private [debug] final val ConnectionTimeout = 30.second
+  private [debug] final val ResponseTimeout   = 10.second
+  private [debug] final val BreakpointTimeout = 30.minute
 
   // Endpoint for post request
-  private [debug] final lazy val endPoint: Uri = uri"http://$address:$port/api/remote/tree"
+  private [debug] final lazy val endPoint = uri"http://$address:$port/api/remote/tree"
 
   /**
     * Default number of breakpoints skipped.
@@ -67,6 +66,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
    * @param tree The debug tree.
    */
   override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
+    // Return value of the renderWithTimeout function not needed for a regular parse
     val _ = renderWithTimeout(input, tree, ResponseTimeout)
   }
   /**
@@ -89,9 +89,8 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
     * 
     * @return The number of breakpoints to skip after this breakpoint exits.
     */
-  override private [debug] def renderWait(input: => String, tree: => DebugTree): Int = {
+  override private [debug] def renderWait(input: => String, tree: => DebugTree): Int =
     renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).flatMap(_.skipBreakpoint).getOrElse(DefaultBreakpointSkip)
-  }
 
   private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
