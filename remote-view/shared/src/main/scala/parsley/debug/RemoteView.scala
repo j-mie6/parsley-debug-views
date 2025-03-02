@@ -29,7 +29,7 @@ import parsley.debug.internal.RemoteViewResponse
   * The request is formatted using the upickle JSON formatting library, it is being used over other
   * libraries like circe for its improved speed over large data structures.
   */
-sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
+sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with DebugView.Manageable {
   protected val port: Int
   protected val address: String
 
@@ -90,11 +90,25 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
     * @return The number of breakpoints to skip after this breakpoint exits.
     */
   override private [debug] def renderWait(input: => String, tree: => DebugTree): Int =
-    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).flatMap(_.skipBreakpoint).getOrElse(DefaultBreakpointSkip)
+    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true)
+      .flatMap(_.skipBreakpoint)
+      .getOrElse(DefaultBreakpointSkip)
 
-  private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false): Option[RemoteViewResponse] = {
+
+  type State = String
+
+  override private [debug] def renderManage(input: => String, tree: => DebugTree, state: State*): (Int, Seq[State]) = {
+    val resp: Option[RemoteViewResponse] = renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true, state.toSeq)
+
+    val skips = resp.flatMap(_.skipBreakpoint).getOrElse(DefaultBreakpointSkip)
+    val newState = resp.flatMap(_.newState).getOrElse(Nil)
+
+    (skips, newState)
+  }
+
+  private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, state: Seq[State] = Nil): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
-    val payload: String = DebugTreeSerialiser.toJSON(input, tree, isDebuggable)
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree, isDebuggable, state)
     
     // Send POST
     println("Sending Debug Tree to Server")
