@@ -90,7 +90,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable {
     * @return The number of breakpoints to skip after this breakpoint exits.
     */
   override private [debug] def renderWait(input: => String, tree: => DebugTree): Int =
-    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).flatMap(_.skipBreakpoint).getOrElse(DefaultBreakpointSkip)
+    renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).map(_.skipBreakpoint).getOrElse(DefaultBreakpointSkip)
 
   private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
