@@ -7,6 +7,7 @@ package parsley.debug.internal
 
 import upickle.default.{ReadWriter => RW, *}
 import parsley.debug.RemoteView
+import sttp.client3.Response
 
 /**
   * Represents a generic response from the remote view.
@@ -21,4 +22,14 @@ private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: I
 
 private [debug] object RemoteViewResponse {
   implicit val rw: RW[RemoteViewResponse] = macroRW
+
+  implicit class RemoteViewResponseExtensions(resp: Option[RemoteViewResponse]) {
+    def getSkips: Int = {
+      resp.map(_.skipBreakpoint).getOrElse(RemoteView.DefaultBreakpointSkip)
+    }
+
+    def getNewState: Seq[RemoteView.State] = {
+      resp.map(_.newState).getOrElse(Nil)
+    }
+  }
 }
