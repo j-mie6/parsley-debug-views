@@ -18,7 +18,7 @@ import sttp.client3.Response
   * @param message String response message from the remote view.
   * @param skipBreakpoint How many breakpoints to skip after this breakpoint (not required).
   */
-private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newState: Seq[RemoteView.State] = Nil)
+private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newState: Seq[(Int, String)] = Nil)
 
 private [debug] object RemoteViewResponse {
   implicit val rw: RW[RemoteViewResponse] = macroRW
