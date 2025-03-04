@@ -17,6 +17,7 @@ import sttp.client3.upicklejson.*
 
 import parsley.debug.internal.DebugTreeSerialiser
 import parsley.debug.internal.RemoteViewResponse
+import parsley.debug.RefCodec.CodedRef
 
 /** The RemoteView HTTP module allows the parsley debug tree to be passed off to a server through a specified port on
   * local host (by default) or to a specified IP address. This enables all of the debug tree parsing, serving and 

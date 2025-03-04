@@ -7,6 +7,7 @@ package parsley.debug.internal
 
 import upickle.default.{ReadWriter => RW, *}
 import parsley.debug.RemoteView
+import parsley.debug.RefCodec.CodedRef
 
 /**
   * Represents a generic response from the remote view.
