@@ -28,7 +28,7 @@ private [debug] object RemoteViewResponse {
       resp.map(_.skipBreakpoint).getOrElse(RemoteView.DefaultBreakpointSkip)
     }
 
-    def getNewState: Seq[RemoteView.State] = {
+    def getNewState: Seq[(Int, String)] = {
       resp.map(_.newState).getOrElse(Nil)
     }
   }
