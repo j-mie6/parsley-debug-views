@@ -7,7 +7,6 @@ package parsley.debug.internal
 
 import upickle.default.{ReadWriter => RW, *}
 import parsley.debug.RemoteView
-import sttp.client3.Response
 
 /**
   * Represents a generic response from the remote view.

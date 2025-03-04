@@ -11,7 +11,6 @@ import upickle.default.{ReadWriter => RW, macroRW}
 
 import parsley.debug.DebugTree
 import parsley.debug.ParseAttempt
-import parsley.debug.RemoteView
 
 /**
   * Case class instance of the DebugTree structure.
