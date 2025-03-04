@@ -17,7 +17,7 @@ import parsley.debug.RemoteView
   * @param message String response message from the remote view.
   * @param skipBreakpoint How many breakpoints to skip after this breakpoint (not required).
   */
-private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newState: Seq[(Int, String)] = Nil)
+private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newState: Seq[CodedRef] = Nil)
 
 private [debug] object RemoteViewResponse {
   implicit val rw: RW[RemoteViewResponse] = macroRW
@@ -27,7 +27,7 @@ private [debug] object RemoteViewResponse {
       resp.map(_.skipBreakpoint).getOrElse(RemoteView.DefaultBreakpointSkip)
     }
 
-    def getNewState: Seq[(Int, String)] = {
+    def getNewState: Seq[CodedRef] = {
       resp.map(_.newState).getOrElse(Nil)
     }
   }
