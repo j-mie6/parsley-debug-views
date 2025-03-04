@@ -92,9 +92,8 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   override private [debug] def renderWait(input: => String, tree: => DebugTree): Int =
     renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).getSkips
 
-  type State = String
 
-  override private [debug] def renderManage(input: => String, tree: => DebugTree, state: State*): (Int, Seq[State]) = {
+  override private [debug] def renderManage(input: => String, tree: => DebugTree, state: (Int, String)*): (Int, Seq[(Int, String)]) = {
     val resp: Option[RemoteViewResponse] = renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true, state.toSeq)
 
     val skips = resp.getSkips
