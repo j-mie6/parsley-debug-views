@@ -71,14 +71,14 @@ object DebugTreeSerialiser {
     private def convertDebugTree(tree: DebugTree): SerialisableDebugTree = {
         val children: List[SerialisableDebugTree] = tree.nodeChildren.map(convertDebugTree(_))
         SerialisableDebugTree(
-        tree.parserName,
-        tree.internalName,
-        tree.parseResults.exists(_.success),
-        tree.childNumber.getOrElse(-1), 
-        tree.parseResults.map(_.fromOffset).getOrElse(-1),
-        tree.parseResults.map(_.toOffset).getOrElse(-1),
-        children,
-        tree.isIterative
+            tree.parserName,
+            tree.internalName,
+            tree.parseResults.exists(_.success),
+            tree.childNumber.getOrElse(-1), 
+            tree.parseResults.map(_.fromOffset).getOrElse(-1),
+            tree.parseResults.map(_.toOffset).getOrElse(-1),
+            children,
+            tree.isIterative
         )
     }
     
