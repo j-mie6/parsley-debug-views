@@ -40,7 +40,7 @@ import parsley.debug.RefCodec.CodedRef
   * @param children An array of child nodes.
   * @param isIterative Is this parser iterative (and opaque)?
   */
-private case class SerialisableDebugTree(name: String, internal: String, success: Boolean, childId: Long, fromOffset: ParseAttempt.Offset, toOffset: ParseAttempt.Offset, children: List[SerialisableDebugTree], isIterative: Boolean)
+private case class SerialisableDebugTree(name: String, internal: String, success: Boolean, childId: Long, fromOffset: ParseAttempt.Offset, toOffset: ParseAttempt.Offset, children: List[SerialisableDebugTree], isIterative: Boolean, newlyGenerated: Boolean)
 
 private object SerialisableDebugTree {
   implicit val rw: RW[SerialisableDebugTree] = macroRW
@@ -67,7 +67,8 @@ object DebugTreeSerialiser {
       tree.parseResults.map(_.fromOffset).getOrElse(-1),
       tree.parseResults.map(_.toOffset).getOrElse(-1),
       children,
-      tree.isIterative
+      tree.isIterative,
+      tree.isNewlyGenerated
     )
   }
 
