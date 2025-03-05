@@ -94,18 +94,14 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
     renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).getSkips
 
 
-  override private [debug] def renderManage(input: => String, tree: => DebugTree, state: CodedRef*): (Int, Seq[CodedRef]) = {
-    val resp: Option[RemoteViewResponse] = renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true, state.toSeq)
-
-    val skips = resp.getSkips
-    val newState = resp.getNewState
-
-    (skips, newState)
+  override private [debug] def renderManage(input: => String, tree: => DebugTree, refs: CodedRef*): (Int, Seq[CodedRef]) = {
+    val resp: Option[RemoteViewResponse] = renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true, refs.toSeq)
+    (resp.getSkips, resp.getNewRefs)
   }
 
-  private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, state: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
+  private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, refs: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
-    val payload: String = DebugTreeSerialiser.toJSON(input, tree, isDebuggable, state)
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree, isDebuggable, refs)
     
     // Send POST
     println("Sending Debug Tree to Server")
