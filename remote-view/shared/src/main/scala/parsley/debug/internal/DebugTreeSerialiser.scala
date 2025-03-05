@@ -5,9 +5,8 @@
  */
 package parsley.debug.internal
 
+import upickle.default as up
 import java.io.Writer
-
-import upickle.default.{ReadWriter => RW, macroRW}
 
 import parsley.debug.DebugTree
 import parsley.debug.ParseAttempt
@@ -52,14 +51,14 @@ private case class SerialisableDebugTree(
 )
 
 private object SerialisableDebugTree {
-    implicit val rw: RW[SerialisableDebugTree] = macroRW
+    implicit val rw: up.ReadWriter[SerialisableDebugTree] = up.macroRW
 }
 
 
 private case class SerialisablePayload(input: String, root: SerialisableDebugTree, isDebuggable: Boolean, refs: Seq[CodedRef])
 
 private object SerialisablePayload {
-    implicit val rw: RW[SerialisablePayload] = macroRW
+    implicit val rw: up.ReadWriter[SerialisablePayload] = up.macroRW
 }
 
 
@@ -90,7 +89,7 @@ object DebugTreeSerialiser {
      */
     def writeJSON(file: Writer, input: String, tree: DebugTree, isDebuggable: Boolean, refs: Seq[CodedRef]): Unit = {
         val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-        upickle.default.writeTo(SerialisablePayload(input, treeRoot, isDebuggable, refs), file)
+        up.writeTo(SerialisablePayload(input, treeRoot, isDebuggable, refs), file)
     }
     
     /**
@@ -101,7 +100,7 @@ object DebugTreeSerialiser {
      */
     def toJSON(input: String, tree: DebugTree, isDebuggable: Boolean, refs: Seq[CodedRef]): String = {
         val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-        upickle.default.write(SerialisablePayload(input, treeRoot, isDebuggable, refs))
+        up.write(SerialisablePayload(input, treeRoot, isDebuggable, refs))
     }
     
 }

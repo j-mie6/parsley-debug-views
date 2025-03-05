@@ -5,7 +5,8 @@
  */
 package parsley.debug.internal
 
-import upickle.default.{ReadWriter => RW, *}
+import upickle.default as up
+
 import parsley.debug.RemoteView
 import parsley.debug.RefCodec.CodedRef
 
@@ -21,7 +22,7 @@ import parsley.debug.RefCodec.CodedRef
 private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newRefs: Seq[CodedRef] = Nil)
 
 private [debug] object RemoteViewResponse {
-    implicit val rw: RW[RemoteViewResponse] = macroRW
+    implicit val rw: up.ReadWriter[RemoteViewResponse] = up.macroRW
     
     implicit class RemoteViewResponseExtensions(resp: Option[RemoteViewResponse]) {
         /** Get number of breakpoints to skip from optional response */

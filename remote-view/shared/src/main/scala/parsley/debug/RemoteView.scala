@@ -10,10 +10,9 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-import upickle.default.{ReadWriter => RW, *}
-
 import sttp.client3.*
 import sttp.client3.upicklejson.*
+import upickle.default as up
 
 import parsley.debug.internal.DebugTreeSerialiser
 import parsley.debug.internal.RemoteViewResponse
@@ -113,7 +112,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
         if (refs.nonEmpty) println("\tManaging state...")
         
         // Implicit JSON deserialiser
-        implicit val responsePayloadRW: RW[RemoteViewResponse] = macroRW[RemoteViewResponse]
+        implicit val responsePayloadRW: up.ReadWriter[RemoteViewResponse] = up.macroRW[RemoteViewResponse]
         
         val backend = TryHttpURLConnectionBackend(
             options = SttpBackendOptions.connectionTimeout(ConnectionTimeout)
