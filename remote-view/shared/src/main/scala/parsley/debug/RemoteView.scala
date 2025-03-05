@@ -143,7 +143,9 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
             case Success(res) => res.body match {
                 // Response was failed response.
                 case Left(errorMessage) => {
-                    println(s"${TextToRed}Failed: ${TextToNormal}Status code: ${TextToOrange}${res.code}${TextToNormal}, Response: $errorMessage")
+                    println(s"${TextToRed}Failed: ${TextToNormal}")
+                    println(s"\tStatus code: ${TextToOrange}${res.code}${TextToNormal}")
+                    println(s"\tResponse: ${TextToOrange}$errorMessage${TextToNormal}")
                     None
                 }
                 
