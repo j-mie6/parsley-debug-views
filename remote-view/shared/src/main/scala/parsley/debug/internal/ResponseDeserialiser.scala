@@ -10,26 +10,24 @@ import parsley.debug.RemoteView
 import parsley.debug.RefCodec.CodedRef
 
 /**
-  * Represents a generic response from the remote view.
-  * 
-  * By adding in the optional fields, that allows adding of arbitrary data, without
-  * breaking back compatibility.
-  *
-  * @param message String response message from the remote view.
-  * @param skipBreakpoint How many breakpoints to skip after this breakpoint (not required).
-  */
+ * Represents a generic response from the remote view.
+ * 
+ * By adding in the optional fields, that allows adding of arbitrary data, without
+ * breaking back compatibility.
+ *
+ * @param message String response message from the remote view.
+ * @param skipBreakpoint How many breakpoints to skip after this breakpoint (not required).
+ */
 private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newRefs: Seq[CodedRef] = Nil)
 
 private [debug] object RemoteViewResponse {
-  implicit val rw: RW[RemoteViewResponse] = macroRW
-
-  implicit class RemoteViewResponseExtensions(resp: Option[RemoteViewResponse]) {
-    def getSkips: Int = {
-      resp.map(_.skipBreakpoint).getOrElse(RemoteView.DefaultBreakpointSkip)
+    implicit val rw: RW[RemoteViewResponse] = macroRW
+    
+    implicit class RemoteViewResponseExtensions(resp: Option[RemoteViewResponse]) {
+        /** Get number of breakpoints to skip from optional response */
+        def getSkips: Int = resp.map(_.skipBreakpoint).getOrElse(RemoteView.DefaultBreakpointSkip)
+        
+        /** Get updated new refs from optional response */
+        def getNewRefs: Seq[CodedRef] = resp.map(_.newRefs).getOrElse(Nil)
     }
-
-    def getNewRefs: Seq[CodedRef] = {
-      resp.map(_.newRefs).getOrElse(Nil)
-    }
-  }
 }
