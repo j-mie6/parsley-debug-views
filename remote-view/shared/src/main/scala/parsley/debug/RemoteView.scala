@@ -36,6 +36,8 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
 
   // Printing helpers
   private [debug] final val TextToRed    = "\u001b[31m"
+  private [debug] final val TextToGreen  = "\u001b[92m"
+  private [debug] final val TextToOrange = "\u001b[93m"
   private [debug] final val TextToNormal = "\u001b[0m"
   
   // Request Timeouts
@@ -104,7 +106,9 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
     val payload: String = DebugTreeSerialiser.toJSON(input, tree, isDebuggable, refs)
     
     // Send POST
-    println("Sending Debug Tree to Server")
+    println("Sending Debug Tree to Server...")
+    if (isDebuggable) println("\tWaiting for debugging input...")
+    if (refs.nonEmpty) println("\tManaging state...")
 
     // Implicit JSON deserialiser
     implicit val responsePayloadRW: RW[RemoteViewResponse] = macroRW[RemoteViewResponse]
@@ -123,22 +127,33 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
       .send(backend)
 
     response match {
+      // Failed to send POST request
       case Failure(exception) => {
-        println(s"${TextToRed}Remote View request failed! Please validate address ($address) and port number ($port) and make sure the remote view app is running.${TextToNormal}\n\tError : ${exception.toString}")
+        println(s"${TextToRed}Remote View request failed! ${TextToNormal}" +
+          s"Please validate address (${TextToOrange}$address${TextToNormal}) and " +
+          s"port number (${TextToOrange}$port${TextToNormal}) and " +
+          s"make sure the Remote View app is running.")
+
+        println(s"\t${TextToRed}Error: ${TextToNormal}${exception.toString}")
         None
       }
+
+      // POST request was successful
       case Success(res) => res.body match {
-        // Left indicates the request is successful, but the response code was not 2xx.
+        // Response was failed response.
         case Left(errorMessage) => {
-          println(s"${TextToRed}Request Failed with message : $errorMessage, and status code : ${res.code}${TextToNormal}")
+          println(s"${TextToRed}Failed: ${TextToNormal}Status code: ${TextToOrange}${res.code}${TextToNormal}, Response: $errorMessage")
           None
         }
-        // Right indicates a successful request with 2xx response code.
+
+        // Response was successful response.
         case Right(remoteViewResp) => {
-          println(s"Request successful with message : ${remoteViewResp.message}")
+          println(s"${TextToGreen}Success: ${TextToNormal}${remoteViewResp.message}")
           Some(remoteViewResp)
         }
+
       }
+
     }
   }
 }
