@@ -34,10 +34,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   protected val address: String
   
   // Printing helpers
-  private [debug] final val TextToRed    = "\u001b[31m"
-  private [debug] final val TextToGreen  = "\u001b[92m"
-  private [debug] final val TextToOrange = "\u001b[93m"
-  private [debug] final val TextToNormal = "\u001b[0m"
+  def colour(str: String, colour: String): String = s"$colour$str${Console.RESET}"
   
   // Request Timeouts
   private [debug] final val ConnectionTimeout = 30.second
@@ -130,12 +127,12 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
     response match {
       // Failed to send POST request
       case Failure(exception) => {
-        println(s"${TextToRed}Remote View request failed! ${TextToNormal}" +
-          s"Please validate address (${TextToOrange}$address${TextToNormal}) and " +
-          s"port number (${TextToOrange}$port${TextToNormal}) and " +
+        println(s"${colour("Remote View request failed! ", Console.RED)}" +
+          s"Please validate address (${colour(address.toString, Console.YELLOW)}) and " +
+          s"port number (${colour(port.toString, Console.YELLOW)}) and " +
           s"make sure the Remote View app is running.")
         
-        println(s"\t${TextToRed}Error: ${TextToNormal}${exception.toString}")
+        println(s"\t${colour("Error:", Console.RED)} ${exception.toString}")
         None
       }
       
@@ -143,15 +140,15 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
       case Success(res) => res.body match {
         // Response was failed response.
         case Left(errorMessage) => {
-          println(s"${TextToRed}Failed: ${TextToNormal}")
-          println(s"\tStatus code: ${TextToOrange}${res.code}${TextToNormal}")
-          println(s"\tResponse: ${TextToOrange}$errorMessage${TextToNormal}")
+          println(colour("Failed: ", Console.RED))
+          println(s"\tStatus code: ${colour(res.code.toString, Console.YELLOW)}")
+          println(s"\tResponse: ${colour(errorMessage.toString, Console.YELLOW)}")
           None
         }
         
         // Response was successful response.
         case Right(remoteViewResp) => {
-          println(s"${TextToGreen}Success: ${TextToNormal}${remoteViewResp.message}")
+          println(s"${colour("Success: ", Console.GREEN)}${remoteViewResp.message}")
           Some(remoteViewResp)
         }
         
