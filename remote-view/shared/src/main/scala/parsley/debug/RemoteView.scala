@@ -114,8 +114,11 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
     
     // Send POST
     println("Sending Debug Tree to Server...")
-    if (isDebuggable) println("\tWaiting for debugging input...")
-    if (refs.nonEmpty) println("\tManaging state...")
+    if (isDebuggable) {
+      if (refs.nonEmpty) print("\tManaging state.")
+      println("\tWaiting for debugging input...")
+    }
+
     
     // Implicit JSON deserialiser
     implicit val responsePayloadRW: up.ReadWriter[RemoteViewResponse] = up.macroRW[RemoteViewResponse]
@@ -157,7 +160,14 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
         
         // Response was successful response.
         case Right(remoteViewResp) => {
-          println(s"${colour("Success: ", Console.GREEN)}${remoteViewResp.message}")
+          print(s"${colour("Success: ", Console.GREEN)}")
+          
+          if (isDebuggable) {
+            println("Posted debugging stage of Debug Tree. Ready to post next stage")
+          } else {
+            println(s"${remoteViewResp.message}")
+          }
+
           Some(remoteViewResp)
         }
         
