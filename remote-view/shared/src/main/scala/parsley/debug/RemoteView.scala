@@ -64,7 +64,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   * @param input The input source.
   * @param tree The debug tree.
   */
-  override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
+  override private [debug] def render(input: =>String, tree: =>DebugTree): Unit = {
     // Return value of the renderWithTimeout function not needed for a regular parse
     val _ = renderWithTimeout(input, tree, ResponseTimeout)
   }
