@@ -26,9 +26,9 @@ private [debug] object RemoteViewResponse {
     
     implicit class RemoteViewResponseExtensions(resp: Option[RemoteViewResponse]) {
         /** Get number of breakpoints to skip from optional response */
-        def getSkips: Int = resp.map(_.skipBreakpoint).getOrElse(RemoteView.DefaultBreakpointSkip)
+        def getSkipsOrDefault: Int = resp.map(_.skipBreakpoint).getOrElse(RemoteView.DefaultBreakpointSkip)
         
         /** Get updated new refs from optional response */
-        def getNewRefs: Seq[CodedRef] = resp.map(_.newRefs).getOrElse(Nil)
+        def getNewRefsOrDefault: Seq[CodedRef] = resp.map(_.newRefs).getOrElse(Nil)
     }
 }
