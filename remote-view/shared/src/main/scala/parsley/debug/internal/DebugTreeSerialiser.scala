@@ -47,7 +47,8 @@ private case class SerialisableDebugTree(
     fromOffset: ParseAttempt.Offset, 
     toOffset: ParseAttempt.Offset, 
     children: List[SerialisableDebugTree], 
-    isIterative: Boolean
+    isIterative: Boolean,
+    newlyGenerated: Boolean
 )
 
 private object SerialisableDebugTree {
@@ -77,7 +78,8 @@ object DebugTreeSerialiser {
             tree.parseResults.map(_.fromOffset).getOrElse(-1),
             tree.parseResults.map(_.toOffset).getOrElse(-1),
             children,
-            tree.isIterative
+            tree.isIterative,
+            tree.isNewlyGenerated
         )
     }
     
