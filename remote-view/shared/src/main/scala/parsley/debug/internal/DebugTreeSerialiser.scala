@@ -56,7 +56,7 @@ private object SerialisableDebugTree {
 }
 
 
-private case class SerialisablePayload(input: String, root: SerialisableDebugTree, isDebuggable: Boolean, refs: Seq[CodedRef])
+private case class SerialisablePayload(input: String, root: SerialisableDebugTree, sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef])
 
 private object SerialisablePayload {
   implicit val rw: up.ReadWriter[SerialisablePayload] = up.macroRW
@@ -89,9 +89,9 @@ object DebugTreeSerialiser {
   * @param file A valid writer object.
   * @param tree The DebugTree.
   */
-  def writeJSON(file: Writer, input: String, tree: DebugTree, isDebuggable: Boolean, refs: Seq[CodedRef]): Unit = {
+  def writeJSON(file: Writer, input: String, tree: DebugTree, sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef]): Unit = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.writeTo(SerialisablePayload(input, treeRoot, isDebuggable, refs), file)
+    up.writeTo(SerialisablePayload(input, treeRoot, sessionId, isDebuggable, refs), file)
   }
   
   /**
@@ -100,9 +100,9 @@ object DebugTreeSerialiser {
   * @param tree The DebugTree
   * @return JSON formatted String
   */
-  def toJSON(input: String, tree: DebugTree, isDebuggable: Boolean, refs: Seq[CodedRef]): String = {
+  def toJSON(input: String, tree: DebugTree, sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef]): String = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.write(SerialisablePayload(input, treeRoot, isDebuggable, refs))
+    up.write(SerialisablePayload(input, treeRoot, sessionId, isDebuggable, refs))
   }
   
 }
