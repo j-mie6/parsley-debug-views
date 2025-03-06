@@ -84,8 +84,6 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   *
   * @param input The input source.
   * @param tree The debug tree.
-  * @param timeout The maximal timeout of the connection.
-  * @param isDebuggable If the instance is a debuggable instance.
   * 
   * @return The number of breakpoints to skip after this breakpoint exits.
   */
@@ -93,7 +91,18 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
     renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).getSkipsOrDefault
   }
   
-  
+  /**
+  * Send the debug tree and input to the port and address specified in the
+  * object construction. 
+  * 
+  * Wait for breakpoints to be skipped and references to be modified.
+  *  
+  * @param input The input source.
+  * @param tree The debug tree.
+  * @param refs Variable coded reference arguments encoded as tuples of Int address and String value 
+  * 
+  * @return The number of breakpoints to skip after this breakpoint exits.
+  */
   override private [debug] def renderManage(input: =>String, tree: =>DebugTree, refs: CodedRef*): (Int, Seq[CodedRef]) = {
     val resp: Option[RemoteViewResponse] = renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true, refs.toSeq)
     (resp.getSkipsOrDefault, resp.getNewRefsOrDefault)
