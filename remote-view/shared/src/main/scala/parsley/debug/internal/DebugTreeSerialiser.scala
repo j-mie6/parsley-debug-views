@@ -45,7 +45,15 @@ private object SerialisableDebugTree {
   implicit val rw: RW[SerialisableDebugTree] = macroRW
 }
 
-private case class SerialisablePayload(input: String, root: SerialisableDebugTree, isDebuggable: Boolean)
+/**
+  * The outer serialisable container.
+  *
+  * @param input The full input string of the parser.
+  * @param root The root node of the debug tree.
+  * @param parserInfo A map from filename to a list of (start, end) locations of named parsers.
+  * @param isDebuggable Flag representing whether this instance is debuggable.
+  */
+private case class SerialisablePayload(input: String, root: SerialisableDebugTree, parserInfo: Map[String, List[(Int, Int)]], isDebuggable: Boolean)
 
 private object SerialisablePayload {
   implicit val rw: RW[SerialisablePayload] = macroRW
@@ -76,9 +84,9 @@ object DebugTreeSerialiser {
     * @param file A valid writer object.
     * @param tree The DebugTree.
     */
-  def writeJSON(file: Writer, input: String, tree: DebugTree, isDebuggable: Boolean): Unit = {
+  def writeJSON(file: Writer, input: String, tree: DebugTree, parserInfo: List[ParserInfo], isDebuggable: Boolean): Unit = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    upickle.default.writeTo(SerialisablePayload(input, treeRoot, isDebuggable), file)
+    upickle.default.writeTo(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, isDebuggable), file)
   }
 
   /**
@@ -87,8 +95,8 @@ object DebugTreeSerialiser {
     * @param tree The DebugTree
     * @return JSON formatted String
     */
-  def toJSON(input: String, tree: DebugTree, isDebuggable: Boolean): String = {
+  def toJSON(input: String, tree: DebugTree, parserInfo: List[ParserInfo], isDebuggable: Boolean): String = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    upickle.default.write(SerialisablePayload(input, treeRoot, isDebuggable))
+    upickle.default.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, isDebuggable))
   }
 }
