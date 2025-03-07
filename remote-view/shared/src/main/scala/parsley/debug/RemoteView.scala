@@ -14,8 +14,7 @@ import sttp.client3.*
 import sttp.client3.upicklejson.*
 import upickle.default as up
 
-import parsley.debug.internal.DebugTreeSerialiser
-import parsley.debug.internal.RemoteViewResponse
+import parsley.debug.internal.{DebugTreeSerialiser, RemoteViewResponse, ParserInfoCollector}
 import parsley.debug.RefCodec.CodedRef
 
 /** The RemoteView HTTP module allows the parsley debug tree to be passed off to a server through a specified port on
@@ -113,7 +112,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   
   private [debug] def renderWithTimeout(input: =>String, tree: =>DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, refs: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
-    val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, isDebuggable, refs)
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, ParserInfoCollector.info.toList, isDebuggable, refs)
     
     // Send POST
     println("Sending Debug Tree to Server...")
