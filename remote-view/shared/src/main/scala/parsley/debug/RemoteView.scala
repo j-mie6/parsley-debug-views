@@ -32,6 +32,9 @@ import parsley.debug.RefCodec.CodedRef
 sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with DebugView.Manageable {
   protected val port: Int
   protected val address: String
+
+  // Identifies a session for the receiver
+  private var sessionId: Int = -1
   
   // Printing helpers
   def colour(str: String, colour: String): String = s"$colour$str${Console.RESET}"
@@ -110,7 +113,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   
   private [debug] def renderWithTimeout(input: =>String, tree: =>DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, refs: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
-    val payload: String = DebugTreeSerialiser.toJSON(input, tree, isDebuggable, refs)
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, isDebuggable, refs)
     
     // Send POST
     println("Sending Debug Tree to Server...")
@@ -168,6 +171,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
             println(s"${remoteViewResp.message}")
           }
 
+          sessionId = remoteViewResp.sessionId
           Some(remoteViewResp)
         }
         
