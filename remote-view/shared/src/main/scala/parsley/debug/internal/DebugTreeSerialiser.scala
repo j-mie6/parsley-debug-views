@@ -97,7 +97,7 @@ object DebugTreeSerialiser {
   * @param file A valid writer object.
   * @param tree The DebugTree.
   */
-  def writeJSON(file: Writer, input: String, tree: DebugTree, parserInfo: List[ParserInfo], sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef]): Unit = {
+  def writeJSON(file: Writer, input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef]): Unit = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
     up.writeTo(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs), file)
   }
@@ -108,7 +108,7 @@ object DebugTreeSerialiser {
   * @param tree The DebugTree
   * @return JSON formatted String
   */
-  def toJSON(input: String, tree: DebugTree, parserInfo: List[ParserInfo], sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef]): String = {
+  def toJSON(input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef]): String = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
     up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs))
   }
