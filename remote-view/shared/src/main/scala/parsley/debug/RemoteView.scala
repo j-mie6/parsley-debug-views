@@ -37,10 +37,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   private var sessionId: Int = -1
   
   // Printing helpers
-  private [debug] final val TextToRed    = "\u001b[31m"
-  private [debug] final val TextToGreen  = "\u001b[92m"
-  private [debug] final val TextToOrange = "\u001b[93m"
-  private [debug] final val TextToNormal = "\u001b[0m"
+  def colour(str: String, colour: String): String = s"$colour$str${Console.RESET}"
   
   // Request Timeouts
   private [debug] final val ConnectionTimeout = 30.second
@@ -70,7 +67,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   * @param input The input source.
   * @param tree The debug tree.
   */
-  override private [debug] def render(input: => String, tree: => DebugTree): Unit = {
+  override private [debug] def render(input: =>String, tree: =>DebugTree): Unit = {
     // Return value of the renderWithTimeout function not needed for a regular parse
     val _ = renderWithTimeout(input, tree, ResponseTimeout)
   }
@@ -90,29 +87,41 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   *
   * @param input The input source.
   * @param tree The debug tree.
-  * @param timeout The maximal timeout of the connection.
-  * @param isDebuggable If the instance is a debuggable instance.
   * 
   * @return The number of breakpoints to skip after this breakpoint exits.
   */
-  override private [debug] def renderWait(input: => String, tree: => DebugTree): Int = {
+  override private [debug] def renderWait(input: =>String, tree: =>DebugTree): Int = {
     renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true).getSkipsOrDefault
   }
   
-  
-  override private [debug] def renderManage(input: => String, tree: => DebugTree, refs: CodedRef*): (Int, Seq[CodedRef]) = {
+  /**
+  * Send the debug tree and input to the port and address specified in the
+  * object construction. 
+  * 
+  * Wait for breakpoints to be skipped and references to be modified.
+  *  
+  * @param input The input source.
+  * @param tree The debug tree.
+  * @param refs Variable coded reference arguments encoded as tuples of Int address and String value 
+  * 
+  * @return The number of breakpoints to skip after this breakpoint exits.
+  */
+  override private [debug] def renderManage(input: =>String, tree: =>DebugTree, refs: CodedRef*): (Int, Seq[CodedRef]) = {
     val resp: Option[RemoteViewResponse] = renderWithTimeout(input, tree, BreakpointTimeout, isDebuggable = true, refs.toSeq)
     (resp.getSkipsOrDefault, resp.getNewRefsOrDefault)
   }
   
-  private [debug] def renderWithTimeout(input: => String, tree: => DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, refs: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
+  private [debug] def renderWithTimeout(input: =>String, tree: =>DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, refs: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
     val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, isDebuggable, refs)
     
     // Send POST
     println("Sending Debug Tree to Server...")
-    if (isDebuggable) println("\tWaiting for debugging input...")
-    if (refs.nonEmpty) println("\tManaging state...")
+    if (isDebuggable) {
+      if (refs.nonEmpty) print("\tManaging state.")
+      println("\tWaiting for debugging input...")
+    }
+
     
     // Implicit JSON deserialiser
     implicit val responsePayloadRW: up.ReadWriter[RemoteViewResponse] = up.macroRW[RemoteViewResponse]
@@ -133,12 +142,12 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
     response match {
       // Failed to send POST request
       case Failure(exception) => {
-        println(s"${TextToRed}Remote View request failed! ${TextToNormal}" +
-          s"Please validate address (${TextToOrange}$address${TextToNormal}) and " +
-          s"port number (${TextToOrange}$port${TextToNormal}) and " +
+        println(s"${colour("Remote View request failed! ", Console.RED)}" +
+          s"Please validate address (${colour(address.toString, Console.YELLOW)}) and " +
+          s"port number (${colour(port.toString, Console.YELLOW)}) and " +
           s"make sure the Remote View app is running.")
         
-        println(s"\t${TextToRed}Error: ${TextToNormal}${exception.toString}")
+        println(s"\t${colour("Error:", Console.RED)} ${exception.toString}")
         None
       }
       
@@ -146,15 +155,22 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
       case Success(res) => res.body match {
         // Response was failed response.
         case Left(errorMessage) => {
-          println(s"${TextToRed}Failed: ${TextToNormal}")
-          println(s"\tStatus code: ${TextToOrange}${res.code}${TextToNormal}")
-          println(s"\tResponse: ${TextToOrange}$errorMessage${TextToNormal}")
+          println(colour("Failed: ", Console.RED))
+          println(s"\tStatus code: ${colour(res.code.toString, Console.YELLOW)}")
+          println(s"\tResponse: ${colour(errorMessage.toString, Console.YELLOW)}")
           None
         }
         
         // Response was successful response.
         case Right(remoteViewResp) => {
-          println(s"${TextToGreen}Success: ${TextToNormal}${remoteViewResp.message}")
+          print(s"${colour("Success: ", Console.GREEN)}")
+          
+          if (isDebuggable) {
+            println("Posted debugging stage of Debug Tree. Ready to post next stage")
+          } else {
+            println(s"${remoteViewResp.message}")
+          }
+
           sessionId = remoteViewResp.sessionId
           Some(remoteViewResp)
         }
