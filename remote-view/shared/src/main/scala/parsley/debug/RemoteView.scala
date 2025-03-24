@@ -216,11 +216,14 @@ object RemoteView {
 }
 
 /** Helper object for connecting to the DILL backend. */
-object DillRemoteView extends RemoteView {
+object DillRemoteView {
   // Default endpoint for DILL backend is port 17484 ("DL") on localhost
-  override protected val port: Int = 17484
-  override protected val address: String = "127.0.0.1"
+  private val port: Int = 17484
+  private val address: String = "127.0.0.1"
+
+  implicit def toViewer(companion: DillRemoteView.type): RemoteView = companion.apply
   
   /** Create a new instance of [[RemoteView]] with default ports for the DILL backend server. */
-  def apply(userAddress: String = address): RemoteView = RemoteView(port, userAddress)
+  def apply: RemoteView = RemoteView(port, address)
+  def apply(userAddress: String): RemoteView = RemoteView(port, userAddress)
 }
