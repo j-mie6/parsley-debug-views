@@ -177,6 +177,7 @@ object RemoteView {
   private final val MinimalIpLength: Int = "0.0.0.0".length
   private final val MaximalIpLength: Int = "255.255.255.255".length
 
+  def apply: RemoteView = RemoteView.apply()
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
     require(userPort <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
     require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
