@@ -182,7 +182,7 @@ object RemoteView {
    *
    * @param userPort The port to use
    * @param userAddress The address to use
-   * @throws IllegalArgumentException if the provided port or address is invalid
+   * @throws java.lang.IllegalArgumentException if the provided port or address is invalid
    * @return A new instance of RemoteView
    */
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
@@ -202,7 +202,7 @@ object RemoteView {
   /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) hosted externally
     *
     * @param userAddress The specific address hosting DILL
-    * @throws IllegalArgumentException if the provided address is invalid
+    * @throws java.lang.IllegalArgumentException if the provided address is invalid
     * @return A new instance of `RemoteView`
     */
   def dill(userAddress: String): RemoteView = RemoteView(dillPort, userAddress)
