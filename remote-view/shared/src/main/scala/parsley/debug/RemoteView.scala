@@ -167,6 +167,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   }
 }
 
+/** Provides an API for creating new `RemoteView` instances */
 object RemoteView {
   private val defaultPort: Int = 80
   private val defaultAddress: String = "127.0.0.1"
@@ -177,6 +178,13 @@ object RemoteView {
   private final val MinimalIpLength: Int = "0.0.0.0".length
   private final val MaximalIpLength: Int = "255.255.255.255".length
 
+  /** Creates a new RemoteView instance, which will send its HTTP requests to the specified port and address
+   *
+   * @param userPort The port to use
+   * @param userAddress The address to use
+   * @throws IllegalArgumentException if the provided port or address is invalid
+   * @return A new instance of RemoteView
+   */
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
     require(userPort <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
     require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
@@ -185,7 +193,18 @@ object RemoteView {
     override protected val address: String = userAddress
   }
 
+  /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) running locally
+    *
+    * @return A new instance of `RemoteView`
+    */
   def dill: RemoteView = RemoteView.dill(defaultAddress)
+
+  /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) hosted externally
+    *
+    * @param userAddress The specific address hosting DILL
+    * @throws IllegalArgumentException if the provided address is invalid
+    * @return A new instance of `RemoteView`
+    */
   def dill(userAddress: String): RemoteView = RemoteView(dillPort, userAddress)
 
 
