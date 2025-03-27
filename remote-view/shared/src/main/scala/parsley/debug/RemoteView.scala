@@ -167,15 +167,27 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   }
 }
 
-private class RemoteViewer(override protected val port: Int, override protected val address: String) extends RemoteView
-
 object RemoteView {
   private val defaultPort: Int = 80
   private val defaultAddress: String = "127.0.0.1"
-  
+
+  private val dillPort: Int = 17484
+
   private final val MaxUserPort: Integer = 0xFFFF
   private final val MinimalIpLength: Int = "0.0.0.0".length
   private final val MaximalIpLength: Int = "255.255.255.255".length
+
+  def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
+    require(userPort <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
+    require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
+
+    override protected val port: Int = userPort
+    override protected val address: String = userAddress
+  }
+
+  def dill: RemoteView = RemoteView.dill(defaultAddress)
+  def dill(userAddress: String): RemoteView = RemoteView(dillPort, userAddress)
+
 
   /** Do some basic validations for a given IP address. */
   private def checkIp(address: String): Boolean = {
@@ -194,13 +206,6 @@ object RemoteView {
     addrLenValid && addrDotValid && addrNumValid 
   }
 
-  /** Create a new instance of [[RemoteView]] with a given custom port. */
-  def apply(port: Integer = defaultPort, address: String = defaultAddress): RemoteView = {
-    require(port <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
-    require(checkIp(address), s"Remote View address invalid : $address")
-    new RemoteViewer(port, address)
-  }
-  
   /**
   * Default number of breakpoints skipped.
   * 
@@ -213,17 +218,4 @@ object RemoteView {
   * server will not cause the user's machine to burst into flames.
   */
   private [debug] final val DefaultBreakpointSkip = -1
-}
-
-/** Helper object for connecting to the DILL backend. */
-object DillRemoteView {
-  // Default endpoint for DILL backend is port 17484 ("DL") on localhost
-  private val port: Int = 17484
-  private val address: String = "127.0.0.1"
-
-  implicit def toViewer(companion: DillRemoteView.type): RemoteView = companion.apply
-  
-  /** Create a new instance of [[RemoteView]] with default ports for the DILL backend server. */
-  def apply: RemoteView = RemoteView(port, address)
-  def apply(userAddress: String): RemoteView = RemoteView(port, userAddress)
 }
