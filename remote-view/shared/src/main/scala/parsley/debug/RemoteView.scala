@@ -178,11 +178,11 @@ object RemoteView {
   private final val MinimalIpLength: Int = "0.0.0.0".length
   private final val MaximalIpLength: Int = "255.255.255.255".length
 
-  /** Creates a new RemoteView instance, which will send its HTTP requests to the specified port and address
+  /** Creates a new RemoteView instance, which will send its HTTP requests to the specified port and address.
+   * Throws `IllegalArgumentException` if the provided port or address is invalid.
    *
    * @param userPort The port to use
    * @param userAddress The address to use
-   * @throws IllegalArgumentException if the provided port or address is invalid
    * @return A new instance of RemoteView
    */
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
@@ -199,10 +199,10 @@ object RemoteView {
     */
   def dill: RemoteView = RemoteView.dill(defaultAddress)
 
-  /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) hosted externally
+  /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) hosted externally.
+    * Throws `IllegalArgumentException` if the provided address is invalid.
     *
     * @param userAddress The specific address hosting DILL
-    * @throws IllegalArgumentException if the provided address is invalid
     * @return A new instance of `RemoteView`
     */
   def dill(userAddress: String): RemoteView = RemoteView(dillPort, userAddress)
