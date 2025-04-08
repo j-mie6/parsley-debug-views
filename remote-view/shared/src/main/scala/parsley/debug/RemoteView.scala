@@ -47,19 +47,6 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   private [debug] final lazy val endPoint = uri"http://$address:$port/api/remote/tree"
   
   /**
-  * Default number of breakpoints skipped.
-  * 
-  * This value will be returned if
-  * - RemoteView cannot connect to the specified server.
-  * - Server does not actually return a value.
-  * 
-  * -1 represents that the parser should stop immediately. This is so 
-  * that if the user is debugging infinite recursion, the lack of a valid
-  * server will not cause the user's machine to burst into flames. 
-  */
-  private [debug] final val DefaultBreakpointSkip = -1
-  
-  /**
   * Send the debug tree and input to the port and address specified in the 
   * object construction. 
   *
@@ -180,16 +167,47 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   }
 }
 
-object RemoteView extends DebugView.Reusable with RemoteView {
-  // Default port uses HTTP port and local host
-  override protected val port: Int = 80
-  override protected val address: String = "127.0.0.1"
-  
+/** Provides an API for creating new `RemoteView` instances */
+object RemoteView {
+  private val defaultPort: Int = 80
+  private val defaultAddress: String = "127.0.0.1"
+
+  private val dillPort: Int = 17484
+
+  private final val MaxUserPort: Integer = 0xFFFF
   private final val MinimalIpLength: Int = "0.0.0.0".length
   private final val MaximalIpLength: Int = "255.255.255.255".length
-  
-  private final val MaxUserPort: Integer = 0xFFFF
-  
+
+  /** Creates a new RemoteView instance, which will send its HTTP requests to the specified port and address.
+   * Throws `IllegalArgumentException` if the provided port or address is invalid.
+   *
+   * @param userPort The port to use
+   * @param userAddress The address to use
+   * @return A new instance of RemoteView
+   */
+  def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
+    require(userPort <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
+    require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
+
+    override protected val port: Int = userPort
+    override protected val address: String = userAddress
+  }
+
+  /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) running locally
+    *
+    * @return A new instance of `RemoteView`
+    */
+  def dill: RemoteView = RemoteView.dill(defaultAddress)
+
+  /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) hosted externally.
+    * Throws `IllegalArgumentException` if the provided address is invalid.
+    *
+    * @param userAddress The specific address hosting DILL
+    * @return A new instance of `RemoteView`
+    */
+  def dill(userAddress: String): RemoteView = RemoteView(dillPort, userAddress)
+
+
   /** Do some basic validations for a given IP address. */
   private def checkIp(address: String): Boolean = {
     val addrLenValid: Boolean = address.length >= MinimalIpLength && address.length <= MaximalIpLength
@@ -206,23 +224,17 @@ object RemoteView extends DebugView.Reusable with RemoteView {
     
     addrLenValid && addrDotValid && addrNumValid 
   }
-  
-  /** Create a new instance of [[RemoteView]] with a given custom port. */
-  def apply(userPort: Integer = port, userAddress: String = address): RemoteView = new RemoteView {
-    require(userPort <= MaxUserPort, s"Remote View port invalid : $userPort > $MaxUserPort")
-    require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
-    
-    override protected val port = userPort
-    override protected val address = userAddress
-  }
-}
 
-/** Helper object for connecting to the DILL backend. */
-object DillRemoteView extends DebugView.Reusable with RemoteView {
-  // Default endpoint for DILL backend is port 17484 ("DL") on localhost
-  override protected val port: Int = 17484
-  override protected val address: String = "127.0.0.1"
-  
-  /** Create a new instance of [[RemoteView]] with default ports for the DILL backend server. */
-  def apply(userAddress: String = address): RemoteView = RemoteView(port, userAddress)
+  /**
+  * Default number of breakpoints skipped.
+  * 
+  * This value will be returned if
+  * - RemoteView cannot connect to the specified server.
+  * - Server does not actually return a value.
+  * 
+  * -1 represents that the parser should stop immediately. This is so 
+  * that if the user is debugging infinite recursion, the lack of a valid
+  * server will not cause the user's machine to burst into flames.
+  */
+  private [debug] final val DefaultBreakpointSkip = -1
 }
