@@ -190,6 +190,7 @@ object RemoteView {
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress, debugName: Option[String] = None): RemoteView = new RemoteView {
     require(userPort <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
     require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
+    require(!debugName.isEmpty, "debugName should not be empty")
 
     override protected val port: Int = userPort
     override protected val address: String = userAddress
