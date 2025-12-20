@@ -63,8 +63,9 @@ private object SerialisableDebugTree {
   * @param root The root node of the debug tree.
   * @param parserInfo A map from filename to a list of (start, end) locations of named parsers.
   * @param isDebuggable Flag representing whether this instance is debuggable.
+  * @param sessionName Optional name of the session.
   */
-private case class SerialisablePayload(input: String, root: SerialisableDebugTree, parserInfo: Map[String, List[(Int, Int)]], sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef])
+private case class SerialisablePayload(input: String, root: SerialisableDebugTree, parserInfo: Map[String, List[(Int, Int)]], sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String])
 
 private object SerialisablePayload {
   implicit val rw: up.ReadWriter[SerialisablePayload] = up.macroRW
@@ -97,9 +98,9 @@ object DebugTreeSerialiser {
   * @param file A valid writer object.
   * @param tree The DebugTree.
   */
-  def writeJSON(file: Writer, input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef]): Unit = {
+  def writeJSON(file: Writer, input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): Unit = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.writeTo(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs), file)
+    up.writeTo(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName), file)
   }
   
   /**
@@ -108,9 +109,9 @@ object DebugTreeSerialiser {
   * @param tree The DebugTree
   * @return JSON formatted String
   */
-  def toJSON(input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef]): String = {
+  def toJSON(input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): String = {
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs))
+    up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName))
   }
   
 }

@@ -100,7 +100,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   
   private [debug] def renderWithTimeout(input: =>String, tree: =>DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, refs: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
-    val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, ParserInfoCollector.info.toList, isDebuggable, refs)
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, ParserInfoCollector.info.toList, isDebuggable, refs, name)
     
     // Send POST
     println("Sending Debug Tree to Server...")
