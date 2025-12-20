@@ -31,7 +31,12 @@ import parsley.debug.RefCodec.CodedRef
 sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with DebugView.Manageable {
   protected val port: Int
   protected val address: String
-  protected val name: Option[String] = None
+  protected var name: Option[String] = None
+
+  def named(debugName: String): RemoteView = {
+    name = Some(debugName)
+    this
+  }
 
   // Identifies a session for the receiver
   private var sessionId: Int = -1
@@ -187,14 +192,12 @@ object RemoteView {
    * @param debugName An identifying name
    * @return A new instance of RemoteView
    */
-  def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress, debugName: Option[String] = None): RemoteView = new RemoteView {
+  def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
     require(userPort <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
     require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
-    require(!debugName.isEmpty, "debugName should not be empty")
 
     override protected val port: Int = userPort
     override protected val address: String = userAddress
-    override protected val name: Option[String] = debugName
   }
 
   /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) running locally
@@ -203,21 +206,13 @@ object RemoteView {
     */
   def dill: RemoteView = RemoteView.dill(defaultAddress)
 
-  /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) running locally, with a provided identifier.
-    *
-    * @param debugName An identifying name
-    * @return A new instance of `RemoteView`
-    */
-  def dill(debugName: String): RemoteView = RemoteView.dill(defaultAddress, Some(debugName))
-
   /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) hosted externally.
     * Throws `IllegalArgumentException` if the provided address is invalid.
     *
     * @param userAddress The specific address hosting DILL
-    * @param debugName An optionally provided identifying name
     * @return A new instance of `RemoteView`
     */
-  def dill(userAddress: String, debugName: Option[String] = None): RemoteView = RemoteView(dillPort, userAddress, debugName)
+  def dill(userAddress: String): RemoteView = RemoteView(dillPort, userAddress)
 
 
   /** Do some basic validations for a given IP address. */
