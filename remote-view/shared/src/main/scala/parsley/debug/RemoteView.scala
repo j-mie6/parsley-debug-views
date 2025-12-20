@@ -33,7 +33,13 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   protected val address: String
   protected var name: Option[String] = None
 
+  /** Set a name to identify this view in the remote service
+   *
+   * @param debugName The identifying name
+   * @return This instance of RemoteView
+   */
   def named(debugName: String): RemoteView = {
+    require(!debugName.isEmpty, "debugName should not be empty")
     name = Some(debugName)
     this
   }
@@ -189,7 +195,6 @@ object RemoteView {
    *
    * @param userPort The port to use
    * @param userAddress The address to use
-   * @param debugName An identifying name
    * @return A new instance of RemoteView
    */
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
