@@ -69,7 +69,7 @@ private case class SerialisablePayload(input: String, root: SerialisableDebugTre
 
 private object SerialisablePayload {
     private implicit val optionStringRW: up.ReadWriter[Option[String]] = up.readwriter[ujson.Value].bimap[Option[String]](
-        _.fold(ujson.Null)(ujson.Str(_)),
+        _.fold[ujson.Value](ujson.Null)(ujson.Str(_)),
         {
             case ujson.Str(s) => Some(s)
             case ujson.Null   => None
