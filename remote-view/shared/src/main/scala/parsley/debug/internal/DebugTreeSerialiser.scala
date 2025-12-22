@@ -68,6 +68,17 @@ private object SerialisableDebugTree {
 private case class SerialisablePayload(input: String, root: SerialisableDebugTree, parserInfo: Map[String, List[(Int, Int)]], sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String])
 
 private object SerialisablePayload {
+  private implicit val optionStringRW: up.ReadWriter[Option[String]] = up.readwriter[ujson.Value].bimap[Option[String]](
+    {
+      case Some(s) => ujson.Str(s)
+      case None    => ujson.Null
+    },
+    {
+      case ujson.Str(s) => Some(s)
+      case ujson.Null   => None
+      case _            => None
+    }
+  )
   implicit val rw: up.ReadWriter[SerialisablePayload] = up.macroRW
 }
 
@@ -110,11 +121,8 @@ object DebugTreeSerialiser {
   * @return JSON formatted String
   */
   def toJSON(input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): String = {
-    implicit val optionWriter: up.Writer[Option[String]] = up.writer[String].comap[Option[String]](_.getOrElse(null))
-    val payloadWriter: up.Writer[SerialisablePayload] = up.macroW[SerialisablePayload]
-
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName))(payloadWriter)
+    up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName))
   }
   
 }
