@@ -1,6 +1,6 @@
-val Scala213 = "2.13.14"
-val Scala212 = "2.12.18"
-val Scala3 = "3.3.3"
+val Scala213 = "2.13.16"
+val Scala212 = "2.12.20"
+val Scala3 = "3.3.7"
 val Java11 = JavaSpec.temurin("11")
 val Java17 = JavaSpec.temurin("17")
 val Java21 = JavaSpec.temurin("21")
@@ -31,7 +31,7 @@ inThisBuild(List(
   ),
   versionScheme := Some("early-semver"),
   crossScalaVersions := Seq(Scala213, Scala212, Scala3),
-  scalaVersion := Scala213,
+  scalaVersion := Scala3,
   // CI Configuration
   tlCiReleaseBranches := Seq(mainBranch),
   tlCiScalafmtCheck := false,
@@ -47,8 +47,7 @@ lazy val root = tlCrossRootProject.aggregate(remoteView, jsonInfo, sfxUi/*, http
 lazy val commonSettings = Seq(
   headerLicenseStyle := HeaderLicenseStyle.SpdxSyntax,
   headerEmptyLine := false,
-  resolvers ++= Opts.resolver.sonatypeOssReleases, // Will speed up MiMA during fast back-to-back releases
-  resolvers ++= Opts.resolver.sonatypeOssSnapshots, // needed during flux periods
+  resolvers += Resolver.sonatypeCentralSnapshots, // needed during flux periods
 
   libraryDependencies ++= Seq(
     "com.github.j-mie6" %%% "parsley"       % baseParsleyVersion,
