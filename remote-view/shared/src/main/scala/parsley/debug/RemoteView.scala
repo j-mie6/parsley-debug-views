@@ -222,6 +222,7 @@ object RemoteView {
    *
    * @param userPort The port to use
    * @param userAddress The address to use
+   * @param debugName An optionally provided identifying name
    * @return A new instance of RemoteView
    */
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress, debugName: Option[String] = None): RemoteView = {
