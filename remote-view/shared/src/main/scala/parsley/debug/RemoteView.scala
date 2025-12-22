@@ -42,20 +42,25 @@ final case class RemoteView private (val port: Int, val address: String, val deb
   private [debug] final lazy val postTreeEndpoint = uri"$baseEndpoint/tree"
   private [debug] final lazy val newSessionEndpoint = uri"$baseEndpoint/newSession"
 
-  private lazy val sessionId: Int = {
+  private [debug] def makeRequest[R](endpoint: sttp.model.Uri, payload: String, timeout: FiniteDuration)(implicit rw: up.ReadWriter[R]): Try[Response[Either[ResponseException[String, Exception], R]]]  = {
     val backend = TryHttpURLConnectionBackend(
       options = SttpBackendOptions.connectionTimeout(ConnectionTimeout)
     )
 
-    implicit val responsePayloadRW: up.ReadWriter[NewSessionResponse] = up.macroRW[NewSessionResponse]
-
-    val response: Try[Response[Either[ResponseException[String, Exception], NewSessionResponse]]] = basicRequest
-      .readTimeout(ConnectionTimeout)
+    basicRequest
+      .readTimeout(timeout)
       .header("User-Agent", "remoteView")
       .contentType("application/json")
-      .post(newSessionEndpoint)
-      .response(asJson[NewSessionResponse])
+      .body(payload)
+      .post(endpoint)
+      .response(asJson[R])
       .send(backend)
+  }
+
+  private lazy val sessionId: Int = {
+    implicit val responsePayloadRW: up.ReadWriter[NewSessionResponse] = up.macroRW[NewSessionResponse]
+
+    val response: Try[Response[Either[ResponseException[String, Exception], NewSessionResponse]]] = makeRequest(newSessionEndpoint, "", ResponseTimeout)
     
     response match {
       case Failure(exception) => {
@@ -152,18 +157,7 @@ final case class RemoteView private (val port: Int, val address: String, val deb
     // Implicit JSON deserialiser
     implicit val responsePayloadRW: up.ReadWriter[RemoteViewResponse] = up.macroRW[RemoteViewResponse]
     
-    val backend = TryHttpURLConnectionBackend(
-      options = SttpBackendOptions.connectionTimeout(ConnectionTimeout)
-    )
-    
-    val response: Try[Response[Either[ResponseException[String, Exception], RemoteViewResponse]]] = basicRequest
-      .readTimeout(timeout)
-      .header("User-Agent", "remoteView")
-      .contentType("application/json")
-      .body(payload)
-      .post(postTreeEndpoint)
-      .response(asJson[RemoteViewResponse])
-      .send(backend)
+    val response: Try[Response[Either[ResponseException[String, Exception], RemoteViewResponse]]] = makeRequest(postTreeEndpoint, payload, timeout)
     
     response match {
       // Failed to send POST request
