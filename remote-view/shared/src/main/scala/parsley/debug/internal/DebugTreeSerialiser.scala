@@ -68,6 +68,17 @@ private object SerialisableDebugTree {
 private case class SerialisablePayload(input: String, root: SerialisableDebugTree, parserInfo: Map[String, List[(Int, Int)]], sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String])
 
 private object SerialisablePayload {
+  private implicit val optionStringRW: up.ReadWriter[Option[String]] = up.readwriter[ujson.Value].bimap[Option[String]](
+    {
+      case Some(s) => ujson.Str(s)
+      case None    => ujson.Null
+    },
+    {
+      case ujson.Str(s) => Some(s)
+      case ujson.Null   => None
+      case _            => None
+    }
+  )
   implicit val rw: up.ReadWriter[SerialisablePayload] = up.macroRW
 }
 
