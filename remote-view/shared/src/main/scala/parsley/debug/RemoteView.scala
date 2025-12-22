@@ -14,7 +14,7 @@ import sttp.client3.*
 import sttp.client3.upicklejson.*
 import upickle.default as up
 
-import parsley.debug.internal.{DebugTreeSerialiser, RemoteViewResponse, ParserInfoCollector}
+import parsley.debug.internal.{DebugTreeSerialiser, NewSessionResponse, RemoteViewResponse, ParserInfoCollector}
 import parsley.debug.RefCodec.CodedRef
 
 /** The RemoteView HTTP module allows the parsley debug tree to be passed off to a server through a specified port on
@@ -28,25 +28,7 @@ import parsley.debug.RefCodec.CodedRef
 * The request is formatted using the upickle JSON formatting library, it is being used over other
 * libraries like circe for its improved speed over large data structures.
 */
-sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with DebugView.Manageable {
-  protected val port: Int
-  protected val address: String
-  protected var name: Option[String] = None
-
-  /** Set a name to identify this view in the remote service
-   *
-   * @param debugName The identifying name
-   * @return This instance of RemoteView
-   */
-  def named(debugName: String): RemoteView = {
-    require(!debugName.isEmpty, "debugName should not be empty")
-    name = Some(debugName)
-    this
-  }
-
-  // Identifies a session for the receiver
-  private var sessionId: Int = -1
-  
+case class RemoteView private (protected val port: Int, protected val address: String, protected val debugName: Option[String] = None) extends DebugView.Reusable with DebugView.Pauseable with DebugView.Manageable {  
   // Printing helpers
   def colour(str: String, colour: String): String = s"$colour$str${Console.RESET}"
   
@@ -56,7 +38,53 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   private [debug] final val BreakpointTimeout = 30.minute
   
   // Endpoint for post request
-  private [debug] final lazy val endPoint = uri"http://$address:$port/api/remote/tree"
+  private [debug] final lazy val baseEndpoint = s"http://$address:$port/api/remote"
+  private [debug] final lazy val postTreeEndpoint = uri"$baseEndpoint/tree"
+  private [debug] final lazy val newSessionEndpoint = uri"$baseEndpoint/newSession"
+
+  private lazy val sessionId: Int = {
+    val backend = TryHttpURLConnectionBackend(
+      options = SttpBackendOptions.connectionTimeout(ConnectionTimeout)
+    )
+
+    implicit val responsePayloadRW: up.ReadWriter[NewSessionResponse] = up.macroRW[NewSessionResponse]
+
+    val response: Try[Response[Either[ResponseException[String, Exception], NewSessionResponse]]] = basicRequest
+      .readTimeout(ConnectionTimeout)
+      .header("User-Agent", "remoteView")
+      .contentType("application/json")
+      .post(newSessionEndpoint)
+      .response(asJson[NewSessionResponse])
+      .send(backend)
+    
+    response match {
+      case Failure(exception) => {
+        println(s"${colour("Remote View request failed! ", Console.RED)}" +
+          s"Please validate address (${colour(address.toString, Console.YELLOW)}) and " +
+          s"port number (${colour(port.toString, Console.YELLOW)}) and " +
+          s"make sure the Remote View app is running.")
+        
+        println(s"\t${colour("Error:", Console.RED)} ${exception.toString}")
+        RemoteView.DefaultSessionId
+      }
+      case Success(res) => res.body match {
+        case Left(errorMessage) => {
+          println(colour("Failed: ", Console.RED))
+          println(s"\tStatus code: ${colour(res.code.toString, Console.YELLOW)}")
+          println(s"\tResponse: ${colour(errorMessage.toString, Console.YELLOW)}")
+          RemoteView.DefaultSessionId
+        }
+        case Right(newSessionResponse) => newSessionResponse.sessionId
+      }
+    }
+  }
+
+  /** Set a name to identify this view in the remote service
+   *
+   * @param debugName The identifying name
+   * @return A named instance of RemoteView
+   */
+  def named(debugName: String): RemoteView = RemoteView(port, address, Some(debugName))
   
   /**
   * Send the debug tree and input to the port and address specified in the 
@@ -111,7 +139,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
   
   private [debug] def renderWithTimeout(input: =>String, tree: =>DebugTree, timeout: FiniteDuration, isDebuggable: Boolean = false, refs: Seq[CodedRef] = Nil): Option[RemoteViewResponse] = {
     // JSON formatted payload for post request
-    val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, ParserInfoCollector.info.toList, isDebuggable, refs, name)
+    val payload: String = DebugTreeSerialiser.toJSON(input, tree, sessionId, ParserInfoCollector.info.toList, isDebuggable, refs, debugName)
     
     // Send POST
     println("Sending Debug Tree to Server...")
@@ -133,7 +161,7 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
       .header("User-Agent", "remoteView")
       .contentType("application/json")
       .body(payload)
-      .post(endPoint)
+      .post(postTreeEndpoint)
       .response(asJson[RemoteViewResponse])
       .send(backend)
     
@@ -169,7 +197,6 @@ sealed trait RemoteView extends DebugView.Reusable with DebugView.Pauseable with
             println(s"${remoteViewResp.message}")
           }
 
-          sessionId = remoteViewResp.sessionId
           Some(remoteViewResp)
         }
         
@@ -197,12 +224,12 @@ object RemoteView {
    * @param userAddress The address to use
    * @return A new instance of RemoteView
    */
-  def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress): RemoteView = new RemoteView {
-    require(userPort <= MaxUserPort, s"Remote View port invalid : $port > $MaxUserPort")
+  def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress, debugName: Option[String] = None): RemoteView = {
+    require(userPort <= MaxUserPort, s"Remote View port invalid : $userPort > $MaxUserPort")
     require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
+    require(debugName.forall(!_.isEmpty), "debugName should not be empty")
 
-    override protected val port: Int = userPort
-    override protected val address: String = userAddress
+    new RemoteView(userPort, userAddress, debugName)
   }
 
   /** Connect to the DILL app (https://github.com/j-mie6/parsley-debug-app) running locally
@@ -249,4 +276,7 @@ object RemoteView {
   * server will not cause the user's machine to burst into flames.
   */
   private [debug] final val DefaultBreakpointSkip = -1
+
+  /* Default value for sessionId when failed to assign one. */
+  private [debug] final val DefaultSessionId = -1
 }
