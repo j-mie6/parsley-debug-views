@@ -110,8 +110,11 @@ object DebugTreeSerialiser {
   * @return JSON formatted String
   */
   def toJSON(input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): String = {
+    implicit val optionWriter: up.Writer[Option[String]] = up.writer[String].comap[Option[String]](_.getOrElse(null))
+    val payloadWriter: up.Writer[SerialisablePayload] = up.macroW[SerialisablePayload]
+
     val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName))
+    up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName))(payloadWriter)
   }
   
 }
