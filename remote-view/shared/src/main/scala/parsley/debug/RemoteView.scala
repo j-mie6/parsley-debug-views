@@ -28,7 +28,7 @@ import parsley.debug.RefCodec.CodedRef
 * The request is formatted using the upickle JSON formatting library, it is being used over other
 * libraries like circe for its improved speed over large data structures.
 */
-case class RemoteView private (protected val port: Int, protected val address: String, protected val debugName: Option[String] = None) extends DebugView.Reusable with DebugView.Pauseable with DebugView.Manageable {  
+final case class RemoteView private (val port: Int, val address: String, val debugName: Option[String] = None) extends DebugView.Reusable with DebugView.Pauseable with DebugView.Manageable {  
   // Printing helpers
   def colour(str: String, colour: String): String = s"$colour$str${Console.RESET}"
   
@@ -228,7 +228,7 @@ object RemoteView {
   def apply(userPort: Int = defaultPort, userAddress: String = defaultAddress, debugName: Option[String] = None): RemoteView = {
     require(userPort <= MaxUserPort, s"Remote View port invalid : $userPort > $MaxUserPort")
     require(checkIp(userAddress), s"Remote View address invalid : $userAddress")
-    require(debugName.forall(!_.isEmpty), "debugName should not be empty")
+    require(debugName.forall(_.nonEmpty), "debugName should not be empty")
 
     new RemoteView(userPort, userAddress, debugName)
   }

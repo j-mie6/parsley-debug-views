@@ -19,7 +19,7 @@ import parsley.debug.RefCodec.CodedRef
 * @param message String response message from the remote view.
 * @param skipBreakpoint How many breakpoints to skip after this breakpoint (not required).
 */
-private [debug] case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newRefs: Seq[CodedRef] = Nil)
+private [debug] final case class RemoteViewResponse(message: String, skipBreakpoint: Int = -1, newRefs: Seq[CodedRef] = Nil)
 
 private [debug] object RemoteViewResponse {
   implicit val rw: up.ReadWriter[RemoteViewResponse] = up.macroRW
@@ -33,4 +33,4 @@ private [debug] object RemoteViewResponse {
   }
 }
 
-private [debug] case class NewSessionResponse(sessionId: Int)
+private [debug] final case class NewSessionResponse(sessionId: Int)
