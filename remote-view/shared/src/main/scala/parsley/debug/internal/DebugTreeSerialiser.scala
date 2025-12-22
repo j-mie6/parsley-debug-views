@@ -14,9 +14,9 @@ import parsley.debug.RefCodec.CodedRef
 
 /**
 * Case class instance of the DebugTree structure.
-* 
+*
 * This will be serialised to JSON structures of the following form.
-* 
+*
 * {
 *   name        : String
 *   internal    : String
@@ -40,19 +40,19 @@ import parsley.debug.RefCodec.CodedRef
 * @param isIterative Is this parser iterative (and opaque)?
 */
 private case class SerialisableDebugTree(
-  name: String, 
-  internal: String, 
-  success: Boolean, 
-  childId: Long, 
-  fromOffset: ParseAttempt.Offset, 
-  toOffset: ParseAttempt.Offset, 
-  children: List[SerialisableDebugTree], 
-  isIterative: Boolean,
-  newlyGenerated: Boolean
+    name: String,
+    internal: String,
+    success: Boolean,
+    childId: Long,
+    fromOffset: ParseAttempt.Offset,
+    toOffset: ParseAttempt.Offset,
+    children: List[SerialisableDebugTree],
+    isIterative: Boolean,
+    newlyGenerated: Boolean
 )
 
 private object SerialisableDebugTree {
-  implicit val rw: up.ReadWriter[SerialisableDebugTree] = up.macroRW
+    implicit val rw: up.ReadWriter[SerialisableDebugTree] = up.macroRW
 }
 
 
@@ -68,18 +68,15 @@ private object SerialisableDebugTree {
 private case class SerialisablePayload(input: String, root: SerialisableDebugTree, parserInfo: Map[String, List[(Int, Int)]], sessionId: Int, isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String])
 
 private object SerialisablePayload {
-  private implicit val optionStringRW: up.ReadWriter[Option[String]] = up.readwriter[ujson.Value].bimap[Option[String]](
-    {
-      case Some(s) => ujson.Str(s)
-      case None    => ujson.Null
-    },
-    {
-      case ujson.Str(s) => Some(s)
-      case ujson.Null   => None
-      case _            => None
-    }
-  )
-  implicit val rw: up.ReadWriter[SerialisablePayload] = up.macroRW
+    private implicit val optionStringRW: up.ReadWriter[Option[String]] = up.readwriter[ujson.Value].bimap[Option[String]](
+        _.fold(ujson.Null)(ujson.Str(_)),
+        {
+            case ujson.Str(s) => Some(s)
+            case ujson.Null   => None
+            case _            => None
+        }
+    )
+    implicit val rw: up.ReadWriter[SerialisablePayload] = up.macroRW
 }
 
 
@@ -88,41 +85,37 @@ private object SerialisablePayload {
 * JSON stream.
 */
 object DebugTreeSerialiser {
-  private def convertDebugTree(tree: DebugTree): SerialisableDebugTree = {
-    val children: List[SerialisableDebugTree] = tree.nodeChildren.map(convertDebugTree(_))
-    SerialisableDebugTree(
-      tree.parserName,
-      tree.internalName,
-      tree.parseResults.exists(_.success),
-      tree.childNumber.getOrElse(-1), 
-      tree.parseResults.map(_.fromOffset).getOrElse(-1),
-      tree.parseResults.map(_.toOffset).getOrElse(-1),
-      children,
-      tree.isIterative,
-      tree.isNewlyGenerated
+    private def convertDebugTree(tree: DebugTree): SerialisableDebugTree = SerialisableDebugTree(
+        tree.parserName,
+        tree.internalName,
+        tree.parseResults.exists(_.success),
+        tree.childNumber.getOrElse(-1),
+        tree.parseResults.map(_.fromOffset).getOrElse(-1),
+        tree.parseResults.map(_.toOffset).getOrElse(-1),
+        tree.nodeChildren.map(convertDebugTree(_)),
+        tree.isIterative,
+        tree.isNewlyGenerated
     )
-  }
-  
-  /**
-  * Write a DebugTree to a writer stream as JSON.
-  *
-  * @param file A valid writer object.
-  * @param tree The DebugTree.
-  */
-  def writeJSON(file: Writer, input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): Unit = {
-    val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.writeTo(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName), file)
-  }
-  
-  /**
-  * Transform the DebugTree to a JSON string.
-  *
-  * @param tree The DebugTree
-  * @return JSON formatted String
-  */
-  def toJSON(input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): String = {
-    val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
-    up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName))
-  }
-  
+
+    /**
+     * Write a DebugTree to a writer stream as JSON.
+     *
+     * @param file A valid writer object.
+     * @param tree The DebugTree.
+     */
+    def writeJSON(file: Writer, input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): Unit = {
+        val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
+        up.writeTo(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName), file)
+    }
+
+    /**
+     * Transform the DebugTree to a JSON string.
+     *
+     * @param tree The DebugTree
+     * @return JSON formatted String
+     */
+    def toJSON(input: String, tree: DebugTree, sessionId: Int, parserInfo: List[ParserInfo], isDebuggable: Boolean, refs: Seq[CodedRef], sessionName: Option[String]): String = {
+        val treeRoot: SerialisableDebugTree = this.convertDebugTree(tree)
+        up.write(SerialisablePayload(input, treeRoot, parserInfo.map((info: ParserInfo) => (info.path, info.positions)).toMap, sessionId, isDebuggable, refs, sessionName))
+    }
 }
