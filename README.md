@@ -19,6 +19,7 @@ Currently, these views support:
 | Version    | `parsley-debug`         |
 | ---------- | ----------------------- |
 | `0.1.0-M1` | `5.0.0-M9`              |
+| `0.1.0-M3` | `5.0.0-M16`             |
 | snapshot   | `5.0-74d27a2-SNAPSHOT`+ |
 
 ## Supported Configurations
